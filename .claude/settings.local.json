@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head:*)",
+      "Bash(ls:*)",
+      "Bash(cd \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/frontend\" && npx tsc --noEmit 2>&1)",
+      "Bash(cd \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/backend\" && python -c \"from app.main import app; print\\('Backend OK'\\)\" 2>&1)",
+      "Bash(tail:*)",
+      "Bash(cd \"C:/Users/bhawn/OneDrive/Desktop/ExamForge\" && python -m venv venv --clear 2>&1)",
+      "Bash(cd \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/backend\" && \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/venv/Scripts/python.exe\" create_teacher.py --email teacher@examforge.com --password teacher123 --name \"Demo Teacher\" --school \"Demo School\" 2>&1)",
+      "Bash(cd \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/backend\" && \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/venv/Scripts/python.exe\" -m uvicorn app.main:app --reload --port 8000 2>&1)",
+      "Bash(cd \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/frontend\" && npm run dev 2>&1)",
+      "Bash(sleep 5 && curl -s http://localhost:8000/api/health 2>&1)",
+      "Bash(wc:*)",
+      "Bash(cd \"C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\\\\backend\" && python -c \"from app.main import app; print\\('Backend imports OK'\\)\" 2>&1)",
+      "Bash(python:*)",
+      "Bash(grep:*)",
+      "Bash(taskkill:*)",
+      "Bash(cd \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/backend\" && \"C:/Users/bhawn/OneDrive/Desktop/ExamForge/venv/Scripts/python.exe\" create_teacher.py --email \"sanjitmathur08@gmail.com\" --password 'Sanbhasan0811!@' --name \"Super Admin\" --school \"ExamForge\" 2>&1)",
+      "Bash(\"C:/Users/bhawn/OneDrive/Desktop/ExamForge/venv/Scripts/python.exe\":*)",
+      "Bash(echo Backend started:*)",
+      "Bash(echo Frontend started:*)",
+      "Bash(\"C:/Users/bhawn/OneDrive/Desktop/ExamForge/venv/Scripts/pip.exe\" install:*)",
+      "Bash(cd \"C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\\\\frontend\" && npx tsc --noEmit 2>&1)",
+      "Bash(curl:*)",
+      "Bash(start:*)",
+      "Bash(cd \"C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\" && venv/Scripts/python -c \"from app.routers.admin import router; print\\('Routes:', [r.path for r in router.routes]\\)\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\\\\backend\" && ../venv/Scripts/python -c \"from app.routers.admin import router; print\\('Routes:', [r.path for r in router.routes]\\)\" 2>&1)",
+      "Bash(cd \"C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\\\\backend\" && ../venv/Scripts/python -c \"\nimport importlib, app.routers.admin as m\nimportlib.reload\\(m\\)\nprint\\([r.path for r in m.router.routes]\\)\n\" 2>&1)",
+      "Bash(find C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\\\\backend\\\\app\\\\routers:*)",
+      "Bash(find C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\\\\backend:*)",
+      "Bash(netstat:*)",
+      "Bash(tasklist:*)",
+      "Bash(cd \"C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\\\\backend\" && ../venv/Scripts/python -c \"\nimport app.routers.admin as m\nimport inspect\nsrc = inspect.getsource\\(m\\)\nprint\\('has stats:', 'stats' in src\\)\nprint\\('file:', m.__file__\\)\n\" 2>&1)",
+      "Bash(powershell:*)",
+      "Bash(gh auth:*)",
+      "Bash(cd C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge:*)",
+      "Bash(cd \"C:\\\\Users\\\\bhawn\\\\OneDrive\\\\Desktop\\\\ExamForge\" && git rm --cached backend/bash.exe.stackdump backend/examforge.db-shm backend/examforge.db-wal bash.exe.stackdump frontend/bash.exe.stackdump 2>&1)"
+    ]
+  }
+}
