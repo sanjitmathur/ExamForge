@@ -51,3 +51,10 @@ async def init_db():
         await conn.execute(
             text("UPDATE users SET role = 'admin' WHERE role IS NULL")
         )
+        # Migrate: add plain_password column if missing
+        try:
+            await conn.execute(
+                text("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255)")
+            )
+        except Exception:
+            pass  # Column already exists

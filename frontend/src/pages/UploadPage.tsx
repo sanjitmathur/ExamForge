@@ -26,7 +26,6 @@ export default function UploadPage() {
     try {
       const res = await papersAPI.list();
       setPapers(res.data);
-      // Start polling for any in-progress papers
       res.data.forEach((p) => {
         if (['pending', 'extracting', 'analyzing'].includes(p.status)) {
           startPolling(p.id);
@@ -141,10 +140,15 @@ export default function UploadPage() {
               onChange={e => setFile(e.target.files?.[0] || null)}
             />
             {file ? (
-              <p style={{ color: 'var(--gray-800)', fontWeight: 500 }}>{file.name}</p>
+              <div>
+                <p style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>&#128196;</p>
+                <p style={{ color: 'var(--gray-800)', fontWeight: 600, fontSize: '0.9rem' }}>{file.name}</p>
+                <p style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Click to change file</p>
+              </div>
             ) : (
               <>
-                <p style={{ fontSize: '1rem', color: 'var(--gray-600)' }}>
+                <p style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>&#8682;</p>
+                <p style={{ fontSize: '0.95rem', color: 'var(--gray-700)', fontWeight: 600 }}>
                   Drop a file here or click to browse
                 </p>
                 <p>PDF, DOCX, JPG, PNG (max 20MB)</p>
@@ -152,7 +156,7 @@ export default function UploadPage() {
             )}
           </div>
 
-          <div style={{ marginTop: '1rem' }}>
+          <div style={{ marginTop: '1.25rem' }}>
             <button type="submit" className="btn btn-primary" disabled={uploading}>
               {uploading ? <><span className="spinner" /> Uploading...</> : 'Upload & Analyze'}
             </button>
@@ -161,9 +165,12 @@ export default function UploadPage() {
       </div>
 
       <div className="card">
-        <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Recent Uploads</h2>
+        <h2 style={{ fontSize: '1rem', marginBottom: '1.25rem', fontWeight: 700 }}>Recent Uploads</h2>
         {papers.length === 0 ? (
-          <div className="empty-state"><p>No papers uploaded yet</p></div>
+          <div className="empty-state" style={{ padding: '2rem' }}>
+            <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>&#128196;</p>
+            <p>No papers uploaded yet</p>
+          </div>
         ) : (
           <div className="table-wrap">
             <table>
@@ -181,15 +188,15 @@ export default function UploadPage() {
               <tbody>
                 {papers.map(p => (
                   <tr key={p.id}>
-                    <td>{p.original_filename}</td>
+                    <td style={{ fontWeight: 500 }}>{p.original_filename}</td>
                     <td>{p.board || '-'}</td>
                     <td>{p.grade_level || '-'}</td>
                     <td>{p.subject || '-'}</td>
                     <td><span className={`badge badge-${p.status}`}>{p.status}</span></td>
-                    <td>{p.question_count}</td>
+                    <td style={{ fontWeight: 600 }}>{p.question_count}</td>
                     <td>
-                      <button className="btn btn-outline btn-sm" onClick={() => handleDelete(p.id)}>
-                        Delete
+                      <button className="btn btn-ghost btn-sm" onClick={() => handleDelete(p.id)} title="Delete">
+                        &#10005;
                       </button>
                     </td>
                   </tr>

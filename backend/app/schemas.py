@@ -6,20 +6,21 @@ from datetime import datetime
 # ── Auth ──
 class UserCreate(BaseModel):
     email: EmailStr
+    username: str
     password: str
     full_name: str
     school_name: Optional[str] = None
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    identifier: str  # email or username
     password: str
-    full_name: str
 
 
 class UserResponse(BaseModel):
     id: int
     email: str
+    username: str
     full_name: str
     school_name: Optional[str]
     role: str
@@ -27,6 +28,15 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    school_name: Optional[str] = None
+    current_password: Optional[str] = None
+    new_password: Optional[str] = None
 
 
 class TokenResponse(BaseModel):

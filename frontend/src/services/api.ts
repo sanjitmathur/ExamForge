@@ -9,6 +9,7 @@ import type {
   ConversationMessage,
   GeneratePaperRequest,
   AdminStats,
+  UserDetail,
 } from '../types';
 
 const api = axios.create({
@@ -26,7 +27,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const url = error.config?.url || '';
+    const isAuthRoute = url.startsWith('/auth/login') || url.startsWith('/auth/register');
+    if (error.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -37,19 +40,32 @@ api.interceptors.response.use(
 
 // ── Auth ──
 export const authAPI = {
-  login: (data: { email: string; password: string; full_name: string }) =>
+  login: (data: { identifier: string; password: string }) =>
     api.post<TokenResponse>('/auth/login', data),
-  register: (data: { email: string; password: string; full_name: string; school_name?: string }) =>
+  register: (data: { email: string; username: string; password: string; full_name: string; school_name?: string }) =>
     api.post<TokenResponse>('/auth/register', data),
   me: () => api.get<TokenResponse['user']>('/auth/me'),
+  updateProfile: (data: {
+    full_name?: string;
+    email?: string;
+    username?: string;
+    school_name?: string;
+    current_password?: string;
+    new_password?: string;
+  }) => api.put<TokenResponse['user']>('/auth/profile', data),
 };
 
 // ── Admin ──
 export const adminAPI = {
   getStats: () => api.get<AdminStats>('/admin/stats'),
   listUsers: () => api.get<TokenResponse['user'][]>('/admin/users'),
-  createUser: (data: { email: string; full_name: string; password: string; school_name?: string; role?: string }) =>
+  getUserDetail: (userId: number) => api.get<UserDetail>(`/admin/user-detail/${userId}`),
+  createUser: (data: { email: string; username: string; full_name: string; password: string; school_name?: string; role?: string }) =>
     api.post<TokenResponse['user']>('/admin/users', data),
+  updateUser: (userId: number, data: { full_name?: string; email?: string; username?: string; school_name?: string; role?: string }) =>
+    api.put<TokenResponse['user']>(`/admin/users/${userId}`, data),
+  deleteUser: (userId: number) =>
+    api.delete(`/admin/users/${userId}`),
   resetPassword: (userId: number, newPassword: string) =>
     api.post(`/admin/users/${userId}/reset-password`, { new_password: newPassword }),
 };

@@ -1,6 +1,7 @@
 export interface User {
   id: number;
   email: string;
+  username: string;
   full_name: string;
   school_name: string | null;
   role: string;
@@ -97,6 +98,43 @@ export interface AdminStats {
   total_questions: number;
   total_papers_generated: number;
   recent_users: User[];
+}
+
+export interface UserPaperItem {
+  id: number;
+  original_filename: string;
+  board: string | null;
+  grade_level: string | null;
+  subject: string | null;
+  status: string;
+  question_count: number;
+  created_at: string;
+}
+
+export interface UserGeneratedItem {
+  id: number;
+  title: string;
+  board: string | null;
+  grade_level: string | null;
+  subject: string | null;
+  status: string;
+  created_at: string;
+}
+
+export interface UserDetail {
+  id: number;
+  email: string;
+  username: string;
+  full_name: string;
+  school_name: string | null;
+  role: string;
+  plain_password: string | null;
+  created_at: string;
+  papers_uploaded: number;
+  questions_extracted: number;
+  papers_generated: number;
+  uploaded_papers: UserPaperItem[];
+  generated_papers: UserGeneratedItem[];
 }
 
 export interface GeneratePaperRequest {

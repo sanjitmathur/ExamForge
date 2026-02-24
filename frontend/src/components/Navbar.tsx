@@ -1,14 +1,10 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   if (!user) return null;
 
@@ -17,7 +13,9 @@ export default function Navbar() {
   return (
     <nav className={`navbar${isAdmin ? ' navbar-admin' : ''}`}>
       <div className="navbar-brand">
-        <NavLink to={isAdmin ? '/admin' : '/'}>{isAdmin ? 'ExamForge Admin' : 'ExamForge'}</NavLink>
+        <NavLink to={isAdmin ? '/admin' : '/'}>
+          ExamForge<span className={isAdmin ? 'navbar-admin-suffix' : 'navbar-user-suffix'}>{isAdmin ? 'Admin' : 'User'}</span>
+        </NavLink>
       </div>
       <div className="navbar-links">
         {isAdmin ? (
@@ -29,7 +27,7 @@ export default function Navbar() {
           <>
             <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}>Dashboard</NavLink>
             <NavLink to="/upload" className={({ isActive }) => isActive ? 'active' : ''}>Upload</NavLink>
-            <NavLink to="/questions" className={({ isActive }) => isActive ? 'active' : ''}>Question Bank</NavLink>
+            <NavLink to="/questions" className={({ isActive }) => isActive ? 'active' : ''}>Questions</NavLink>
             <NavLink to="/generate" className={({ isActive }) => isActive ? 'active' : ''}>Generate</NavLink>
           </>
         )}
@@ -37,7 +35,16 @@ export default function Navbar() {
       <div className="navbar-user">
         {isAdmin && <span className="badge badge-admin">Admin</span>}
         <span>{user.full_name}</span>
-        <button onClick={handleLogout} className="btn btn-outline">Logout</button>
+        <button
+          className="theme-toggle-nav"
+          onClick={toggleTheme}
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        >
+          {theme === 'light' ? '\u263D' : '\u2600'}
+        </button>
+        <NavLink to="/settings" className={({ isActive }) => `settings-link${isActive ? ' active' : ''}`} title="Settings">
+          &#9881;
+        </NavLink>
       </div>
     </nav>
   );

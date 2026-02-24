@@ -97,10 +97,10 @@ export default function QuestionsPage() {
             <div className="question-meta">
               <span className={`badge badge-${q.question_type}`}>{typeLabel(q.question_type)}</span>
               <span className={`badge badge-${q.difficulty}`}>{q.difficulty}</span>
-              {q.board && <span className="badge" style={{ background: '#e0e7ff', color: '#3730a3' }}>{q.board}</span>}
-              {q.topic && <span className="badge" style={{ background: '#f3f4f6', color: '#374151' }}>{q.topic}</span>}
-              {q.bloom_level && <span className="badge" style={{ background: '#fef3c7', color: '#92400e' }}>{q.bloom_level}</span>}
-              {q.marks && <span className="badge" style={{ background: '#d1fae5', color: '#065f46' }}>{q.marks} marks</span>}
+              {q.board && <span className="badge badge-board">{q.board}</span>}
+              {q.topic && <span className="badge badge-topic">{q.topic}</span>}
+              {q.bloom_level && <span className="badge badge-bloom">{q.bloom_level}</span>}
+              {q.marks && <span className="badge badge-marks">{q.marks} marks</span>}
             </div>
           </div>
         ))

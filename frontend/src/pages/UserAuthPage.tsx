@@ -5,6 +5,8 @@ import { authAPI } from '../services/api';
 
 export default function UserAuthPage() {
   const [tab, setTab] = useState<'login' | 'signup'>('login');
+  const [identifier, setIdentifier] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -15,6 +17,8 @@ export default function UserAuthPage() {
   const navigate = useNavigate();
 
   const resetForm = () => {
+    setIdentifier('');
+    setUsername('');
     setEmail('');
     setPassword('');
     setFullName('');
@@ -27,7 +31,7 @@ export default function UserAuthPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await authAPI.login({ email, password, full_name: fullName });
+      const res = await authAPI.login({ identifier, password });
       login(res.data.access_token, res.data.user);
       navigate('/');
     } catch (err: any) {
@@ -44,6 +48,7 @@ export default function UserAuthPage() {
     try {
       const res = await authAPI.register({
         email,
+        username,
         password,
         full_name: fullName,
         school_name: schoolName || undefined,
@@ -59,7 +64,7 @@ export default function UserAuthPage() {
 
   return (
     <div className="login-container">
-      <div className="login-card">
+      <div className="login-card animate-fade-in">
         <Link to="/login" className="back-link">&larr; Back</Link>
         <h1>ExamForge</h1>
         <p className="subtitle">Teacher Portal</p>
@@ -81,12 +86,8 @@ export default function UserAuthPage() {
         {tab === 'login' ? (
           <form onSubmit={handleLogin}>
             <div className="form-group">
-              <label>Full Name</label>
-              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} required />
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <label>Email or Username</label>
+              <input type="text" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder="you@example.com or username" required />
             </div>
             <div className="form-group">
               <label>Password</label>
@@ -100,11 +101,15 @@ export default function UserAuthPage() {
           <form onSubmit={handleSignup}>
             <div className="form-group">
               <label>Full Name</label>
-              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} required />
+              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="John Doe" required />
+            </div>
+            <div className="form-group">
+              <label>Username</label>
+              <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="johndoe" required />
             </div>
             <div className="form-group">
               <label>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="john@school.edu" required />
             </div>
             <div className="form-group">
               <label>Password</label>
@@ -112,7 +117,7 @@ export default function UserAuthPage() {
             </div>
             <div className="form-group">
               <label>School Name <span style={{ color: 'var(--gray-400)', fontWeight: 400 }}>(optional)</span></label>
-              <input type="text" value={schoolName} onChange={e => setSchoolName(e.target.value)} />
+              <input type="text" value={schoolName} onChange={e => setSchoolName(e.target.value)} placeholder="Springfield High School" />
             </div>
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? <span className="spinner" /> : 'Create Account'}

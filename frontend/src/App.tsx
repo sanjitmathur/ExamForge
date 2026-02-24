@@ -6,11 +6,13 @@ import AdminLoginPage from './pages/AdminLoginPage'
 import UserAuthPage from './pages/UserAuthPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminUsersPage from './pages/AdminUsersPage'
+import AdminUserDetailPage from './pages/AdminUserDetailPage'
 import DashboardPage from './pages/DashboardPage'
 import UploadPage from './pages/UploadPage'
 import QuestionsPage from './pages/QuestionsPage'
 import GeneratePage from './pages/GeneratePage'
 import ViewPaperPage from './pages/ViewPaperPage'
+import SettingsPage from './pages/SettingsPage'
 import { useAuth } from './context/AuthContext'
 import './App.css'
 
@@ -55,6 +57,10 @@ function App() {
         {/* Admin-only routes */}
         <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
         <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+        <Route path="/admin/users/:id" element={<AdminRoute><AdminUserDetailPage /></AdminRoute>} />
+
+        {/* Settings (both admin and user) */}
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
         {/* User-only routes (admin gets redirected to /admin) */}
         <Route path="/" element={<UserRoute><DashboardPage /></UserRoute>} />
