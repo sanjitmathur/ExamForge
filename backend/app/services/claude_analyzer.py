@@ -2,7 +2,7 @@
 
 import json
 import logging
-import google.generativeai as genai
+from google import genai
 from ..config import settings
 
 log = logging.getLogger(__name__)
@@ -37,12 +37,11 @@ def analyze_paper(extracted_text: str) -> list[dict]:
     if not settings.GEMINI_API_KEY:
         raise RuntimeError("GEMINI_API_KEY is not configured")
 
-    genai.configure(api_key=settings.GEMINI_API_KEY)
-    model = genai.GenerativeModel(settings.GEMINI_MODEL)
+    client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     prompt = ANALYSIS_PROMPT.format(text=extracted_text[:50000])  # Limit to ~50k chars
 
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(model=settings.GEMINI_MODEL, contents=prompt)
 
     response_text = response.text.strip()
 

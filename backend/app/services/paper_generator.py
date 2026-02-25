@@ -4,7 +4,8 @@ import json
 import logging
 import threading
 import traceback
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from ..database import SyncSessionLocal
 from ..models import GeneratedPaper, ExtractedQuestion, Conversation, UploadedPaper, UserLearning
 from ..config import settings
@@ -84,9 +85,8 @@ def extract_learnings(paper_id: int, user_id: int):
             conversation=conv_text,
         )
 
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel(settings.GEMINI_MODEL)
-        response = model.generate_content(prompt)
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        response = client.models.generate_content(model=settings.GEMINI_MODEL, contents=prompt)
 
         raw = response.text.strip()
         # Strip markdown code fences if present
@@ -250,9 +250,8 @@ def generate_paper_background(paper_id: int):
             format_reference=format_reference,
         )
 
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel(settings.GEMINI_MODEL)
-        response = model.generate_content(prompt)
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        response = client.models.generate_content(model=settings.GEMINI_MODEL, contents=prompt)
 
         response_text = response.text
 
@@ -334,9 +333,12 @@ def refine_paper_with_chat(paper_id: int, user_message: str, user_id: int):
             role = "model" if conv.role == "assistant" else "user"
             history.append({"role": role, "parts": [conv.content]})
 
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        model = genai.GenerativeModel(settings.GEMINI_MODEL)
-        chat = model.start_chat(history=history)
+        history_typed = [
+            types.Content(role=item["role"], parts=[types.Part.from_text(text=item["parts"][0])])
+            for item in history
+        ]
+        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        chat = client.chats.create(model=settings.GEMINI_MODEL, history=history_typed)
         response = chat.send_message(user_message)
 
         assistant_text = response.text
