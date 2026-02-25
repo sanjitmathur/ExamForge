@@ -107,7 +107,7 @@ export default function LoginPage() {
           <div className="lp-nav-actions">
             <Link to="/login/admin" className="lp-nav-btn-outline">Admin</Link>
             <Link to="/login/user" className="lp-nav-btn-outline">Log In</Link>
-            <Link to="/login/user?tab=signup" className="lp-nav-signup">Sign Up</Link>
+            <Link to="/signup" className="lp-nav-signup">Sign Up</Link>
             <button
               className="lp-nav-theme"
               onClick={toggleTheme}
@@ -144,7 +144,7 @@ export default function LoginPage() {
           </p>
 
           <div className="lp-hero-ctas">
-            <Link to="/login/user?tab=signup" className="lp-btn-primary">
+            <Link to="/signup" className="lp-btn-primary">
               Get Started Free &rarr;
             </Link>
             <button

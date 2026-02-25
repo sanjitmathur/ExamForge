@@ -84,6 +84,8 @@ export const papersAPI = {
   get: (id: number) => api.get<UploadedPaper>(`/papers/${id}`),
   status: (id: number) =>
     api.get<{ id: number; status: string; error_message: string | null; question_count: number }>(`/papers/${id}/status`),
+  retry: (id: number) =>
+    api.post<{ id: number; status: string; error_message: string | null; question_count: number }>(`/papers/${id}/retry`),
   delete: (id: number) => api.delete(`/papers/${id}`),
 };
 
@@ -103,6 +105,7 @@ export const generateAPI = {
   get: (id: number) => api.get<GeneratedPaper>(`/generate/${id}`),
   status: (id: number) =>
     api.get<{ id: number; status: string; error_message: string | null }>(`/generate/${id}/status`),
+  delete: (id: number) => api.delete(`/generate/${id}`),
 };
 
 // ── Chat ──

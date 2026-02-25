@@ -150,6 +150,18 @@ class GeneratedPaperListResponse(BaseModel):
 
 
 # ── Conversations ──
+class UserLearningResponse(BaseModel):
+    id: int
+    category: str
+    learning: str
+    source_paper_id: Optional[int]
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class ChatMessageRequest(BaseModel):
     message: str
 

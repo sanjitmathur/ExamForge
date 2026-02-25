@@ -7,7 +7,7 @@ AI-powered question paper generator for teachers and educational institutions.
 - **Upload Papers**: Upload existing question papers (PDF, DOCX, images) for AI extraction
 - **Question Bank**: Automatically extract and categorize questions by type, difficulty, topic, and Bloom's taxonomy level
 - **Paper Generation**: Generate new question papers with AI based on your question bank
-- **Chat Refinement**: Refine generated papers through a conversational interface
+- **Chat Refinement**: Refine generated papers through a modern chat interface with optimistic messaging, auto-growing input, stop generation, and quick-action chips
 - **Export**: Download papers and answer keys as PDF or Word documents
 - **Admin Panel**: Manage users, view platform stats, reset passwords
 - **Dark/Light Mode**: Full theme support across the entire app
@@ -16,7 +16,7 @@ AI-powered question paper generator for teachers and educational institutions.
 
 - **Frontend**: React 19, TypeScript, Vite
 - **Backend**: FastAPI, SQLAlchemy (async), SQLite
-- **AI**: Anthropic Claude API for question extraction and paper generation
+- **AI**: Google Gemini API for question extraction and paper generation
 
 ## Getting Started
 

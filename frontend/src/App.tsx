@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import AdminLoginPage from './pages/AdminLoginPage'
 import UserAuthPage from './pages/UserAuthPage'
+import SignupPage from './pages/SignupPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminUsersPage from './pages/AdminUsersPage'
 import AdminUserDetailPage from './pages/AdminUserDetailPage'
@@ -53,6 +54,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/login/admin" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <AdminLoginPage />} />
         <Route path="/login/user" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <UserAuthPage />} />
+        <Route path="/signup" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <SignupPage />} />
 
         {/* Admin-only routes */}
         <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />

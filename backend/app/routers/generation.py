@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from ..database import get_db
-from ..models import User, GeneratedPaper, Conversation
+from ..models import User, GeneratedPaper, Conversation, UserLearning
 from ..schemas import (
     GeneratePaperRequest, GeneratedPaperResponse, GeneratedPaperListResponse,
-    PaperStatusResponse, ChatMessageRequest, ConversationResponse,
+    PaperStatusResponse, ChatMessageRequest, ConversationResponse, UserLearningResponse,
 )
 from ..utils.deps import get_current_user
 from ..services.paper_generator import generate_paper_background, refine_paper_with_chat
@@ -128,6 +128,26 @@ async def chat_with_paper(
     }
 
 
+@router.delete("/{paper_id:int}")
+async def delete_paper(
+    paper_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(GeneratedPaper).where(
+            GeneratedPaper.id == paper_id,
+            GeneratedPaper.user_id == current_user.id,
+        )
+    )
+    paper = result.scalar_one_or_none()
+    if not paper:
+        raise HTTPException(404, "Paper not found")
+    await db.delete(paper)
+    await db.commit()
+    return {"detail": "Paper deleted"}
+
+
 @router.get("/{paper_id:int}/chat", response_model=list[ConversationResponse])
 async def get_chat_history(
     paper_id: int,
@@ -150,3 +170,38 @@ async def get_chat_history(
         .order_by(Conversation.created_at)
     )
     return [ConversationResponse.model_validate(c) for c in result.scalars().all()]
+
+
+# ── Learnings ──────────────────────────────────────────────────────────────
+
+@router.get("/learnings", response_model=list[UserLearningResponse])
+async def list_learnings(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(UserLearning)
+        .where(UserLearning.user_id == current_user.id, UserLearning.is_active == True)
+        .order_by(UserLearning.created_at.desc())
+    )
+    return [UserLearningResponse.model_validate(l) for l in result.scalars().all()]
+
+
+@router.delete("/learnings/{learning_id:int}")
+async def delete_learning(
+    learning_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(UserLearning).where(
+            UserLearning.id == learning_id,
+            UserLearning.user_id == current_user.id,
+        )
+    )
+    learning = result.scalar_one_or_none()
+    if not learning:
+        raise HTTPException(404, "Learning not found")
+    await db.delete(learning)
+    await db.commit()
+    return {"detail": "Learning deleted"}

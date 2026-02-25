@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Users, ShieldCheck, FileUp, HelpCircle, Zap } from 'lucide-react';
 import { adminAPI } from '../services/api';
 import type { AdminStats } from '../types';
 
-const ACCENT_COLORS = ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#0ea5e9'];
+const STAT_ICONS = [
+  <Users size={20} strokeWidth={1.8} />,
+  <ShieldCheck size={20} strokeWidth={1.8} />,
+  <FileUp size={20} strokeWidth={1.8} />,
+  <HelpCircle size={20} strokeWidth={1.8} />,
+  <Zap size={20} strokeWidth={1.8} />,
+];
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -58,15 +65,14 @@ export default function AdminDashboardPage() {
         <p>Admin dashboard with platform-wide statistics</p>
       </div>
 
-      <div className="stats-grid">
+      <div className="dash-stats-grid">
         {statCards.map((card, i) => (
-          <div
-            key={card.label}
-            className="stat-card"
-            style={{ borderTop: `3px solid ${ACCENT_COLORS[i]}` }}
-          >
-            <div className="stat-label">{card.label}</div>
-            <div className="stat-value">{card.value}</div>
+          <div key={card.label} className="dash-stat-card" style={{ animationDelay: `${i * 0.06}s` }}>
+            <div className="dash-stat-icon">{STAT_ICONS[i]}</div>
+            <div className="dash-stat-info">
+              <div className="dash-stat-value">{card.value}</div>
+              <div className="dash-stat-label">{card.label}</div>
+            </div>
           </div>
         ))}
       </div>

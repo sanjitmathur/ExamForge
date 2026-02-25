@@ -76,6 +76,18 @@ export default function UploadPage() {
     }
   };
 
+  const handleRetry = async (id: number) => {
+    try {
+      await papersAPI.retry(id);
+      setPapers(prev => prev.map(p =>
+        p.id === id ? { ...p, status: 'pending', error_message: null } : p
+      ));
+      startPolling(id);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Retry failed');
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this paper and its extracted questions?')) return;
     try {
@@ -194,7 +206,12 @@ export default function UploadPage() {
                     <td>{p.subject || '-'}</td>
                     <td><span className={`badge badge-${p.status}`}>{p.status}</span></td>
                     <td style={{ fontWeight: 600 }}>{p.question_count}</td>
-                    <td>
+                    <td style={{ display: 'flex', gap: '0.25rem' }}>
+                      {p.status === 'failed' && (
+                        <button className="btn btn-ghost btn-sm" onClick={() => handleRetry(p.id)} title="Retry analysis">
+                          &#8635;
+                        </button>
+                      )}
                       <button className="btn btn-ghost btn-sm" onClick={() => handleDelete(p.id)} title="Delete">
                         &#10005;
                       </button>

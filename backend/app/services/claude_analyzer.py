@@ -1,24 +1,29 @@
-"""Send extracted text to Claude for question extraction and analysis."""
+"""Send extracted text to Gemini for question extraction and analysis."""
 
 import json
 import logging
-from anthropic import Anthropic
+import google.generativeai as genai
 from ..config import settings
 
 log = logging.getLogger(__name__)
 
 ANALYSIS_PROMPT = """You are an expert education analyst. Analyze the following exam paper text and extract every question.
 
+CRITICAL RULE — Sub-parts:
+If a question has sub-parts (e.g. 1a, 1b, 1c or 1(i), 1(ii) or Q3 part A, part B), do NOT treat each sub-part as a separate question. Instead, combine ALL sub-parts into ONE question entry. The "question_text" should include the full parent question along with all its sub-parts exactly as they appear.
+
 For each question, return a JSON object with these fields:
-- "question_text": the full question text
-- "answer_text": the answer if provided, else null
+- "question_text": the full question text INCLUDING all sub-parts (a, b, c, i, ii, etc.) as a single combined entry
+- "answer_text": the answer if provided (include answers for all sub-parts), else null
 - "question_type": one of "mcq", "short_answer", "long_answer", "fill_blank", "true_false"
 - "difficulty": one of "easy", "medium", "hard"
-- "topic": the subject topic this question covers
-- "marks": marks allocated (number or null)
+- "topic": a SHORT, broad topic label (e.g. "Magnetic Fields", "Algebra", "Thermodynamics"). IMPORTANT: Cluster related questions under the SAME topic. Do NOT create a unique topic per question. Use at most 3-5 distinct topics for the entire paper.
+- "marks": total marks for the question including all sub-parts (number or null)
 - "options": array of option strings for MCQs, else null
 - "correct_option": correct option letter for MCQs (e.g. "A"), else null
 - "bloom_level": one of "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"
+
+Example: If the paper has "Q1. (a) Define force. (b) State Newton's third law. (c) Give an example.", that is ONE question with all three parts in "question_text", NOT three separate questions.
 
 Return ONLY a JSON array of question objects. No explanation, no markdown fences.
 
@@ -29,20 +34,17 @@ Paper text:
 
 
 def analyze_paper(extracted_text: str) -> list[dict]:
-    if not settings.ANTHROPIC_API_KEY:
-        raise RuntimeError("ANTHROPIC_API_KEY is not configured")
+    if not settings.GEMINI_API_KEY:
+        raise RuntimeError("GEMINI_API_KEY is not configured")
 
-    client = Anthropic(api_key=settings.ANTHROPIC_API_KEY)
+    genai.configure(api_key=settings.GEMINI_API_KEY)
+    model = genai.GenerativeModel(settings.GEMINI_MODEL)
 
     prompt = ANALYSIS_PROMPT.format(text=extracted_text[:50000])  # Limit to ~50k chars
 
-    message = client.messages.create(
-        model=settings.CLAUDE_MODEL,
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    response = model.generate_content(prompt)
 
-    response_text = message.content[0].text.strip()
+    response_text = response.text.strip()
 
     # Strip markdown fences if present
     if response_text.startswith("```"):
@@ -55,10 +57,10 @@ def analyze_paper(extracted_text: str) -> list[dict]:
     try:
         questions = json.loads(response_text)
     except json.JSONDecodeError:
-        log.error("Failed to parse Claude response as JSON: %s", response_text[:500])
-        raise RuntimeError("Claude returned invalid JSON for question extraction")
+        log.error("Failed to parse Gemini response as JSON: %s", response_text[:500])
+        raise RuntimeError("Gemini returned invalid JSON for question extraction")
 
     if not isinstance(questions, list):
-        raise RuntimeError("Claude response is not a JSON array")
+        raise RuntimeError("Gemini response is not a JSON array")
 
     return questions

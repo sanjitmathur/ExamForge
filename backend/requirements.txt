@@ -4,13 +4,13 @@ sqlalchemy
 aiosqlite
 python-jose[cryptography]
 passlib[bcrypt]
-anthropic
+google-generativeai
 pdfplumber
 PyMuPDF
 python-docx
 pytesseract
 Pillow
-weasyprint
+xhtml2pdf
 markdown
 python-dotenv
 pydantic-settings

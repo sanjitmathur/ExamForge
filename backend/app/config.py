@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production-use-a-real-secret-key"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
-    ANTHROPIC_API_KEY: str = ""
-    CLAUDE_MODEL: str = "claude-sonnet-4-20250514"
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
     UPLOAD_DIR: Path = Path(__file__).resolve().parent.parent.parent / "data" / "uploads"
     EXPORT_DIR: Path = Path(__file__).resolve().parent.parent.parent / "data" / "exports"
     MAX_FILE_SIZE_MB: int = 20

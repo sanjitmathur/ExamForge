@@ -1,25 +1,8 @@
-export const BOARDS = ["CBSE", "ICSE", "State Board", "IB", "Custom"] as const;
+export const BOARDS = ["ICSE", "IB", "Custom"] as const;
 
-export const GRADES = Array.from({ length: 12 }, (_, i) => String(i + 1));
+export const GRADES = ["4", "5", "6", "7"];
 
-export const SUBJECTS = [
-  "Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "English",
-  "Hindi",
-  "History",
-  "Geography",
-  "Political Science",
-  "Economics",
-  "Computer Science",
-  "Accountancy",
-  "Business Studies",
-  "Environmental Science",
-  "General Science",
-  "Social Science",
-] as const;
+export const SUBJECTS = ["Mathematics", "Science", "English"] as const;
 
 export const QUESTION_TYPES = [
   { value: "mcq", label: "MCQ" },

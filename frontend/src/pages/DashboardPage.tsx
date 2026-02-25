@@ -67,7 +67,7 @@ export default function DashboardPage() {
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} itemStyle={{ color: 'var(--gray-800)' }} labelStyle={{ color: 'var(--gray-800)' }} />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
               </PieChart>
             </ResponsiveContainer>
@@ -78,7 +78,7 @@ export default function DashboardPage() {
               <BarChart data={toPieData(stats.by_difficulty)} barCategoryGap="30%">
                 <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--gray-500)' }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--gray-500)' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} cursor={{ fill: 'rgba(99,102,241,0.04)' }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} itemStyle={{ color: 'var(--gray-800)' }} labelStyle={{ color: 'var(--gray-800)' }} cursor={{ fill: 'rgba(99,102,241,0.04)' }} />
                 <Bar dataKey="value" fill="#6366f1" radius={[8,8,0,0]} />
               </BarChart>
             </ResponsiveContainer>

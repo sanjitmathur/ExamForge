@@ -1,14 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 import { authAPI } from '../services/api';
-import { Sun, Moon } from 'lucide-react';
+import { UserRound, KeyRound } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, logout, updateUser } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
 
   // Account info form
   const [fullName, setFullName] = useState(user?.full_name || '');
@@ -56,8 +52,8 @@ export default function SettingsPage() {
       setPwErr('New passwords do not match.');
       return;
     }
-    if (newPassword.length < 4) {
-      setPwErr('New password must be at least 4 characters.');
+    if (newPassword.length < 6) {
+      setPwErr('New password must be at least 6 characters.');
       return;
     }
     setPwLoading(true);
@@ -77,64 +73,19 @@ export default function SettingsPage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   if (!user) return null;
 
   return (
     <div className="page animate-fade-in">
       <div className="page-header">
-        <h1>Settings</h1>
-        <p>Manage your account, appearance, and session</p>
+        <h1>Manage Account</h1>
+        <p>Update your profile and security settings</p>
       </div>
 
-      <div className="settings-grid">
-        {/* Appearance */}
-        <div className="card animate-slide-up">
-          <h2><span className="card-icon">{'\uD83C\uDFA8'}</span> Appearance</h2>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Theme</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--gray-500)', marginTop: '0.2rem' }}>
-                Currently using <strong>{theme}</strong> mode
-              </div>
-            </div>
-            <button
-              className={`theme-toggle-btn ${theme}`}
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              <span className="theme-toggle-track">
-                <span className="theme-toggle-thumb">
-                  {theme === 'light' ? <Moon size={12} strokeWidth={2.5} /> : <Sun size={12} strokeWidth={2.5} />}
-                </span>
-              </span>
-              <span className="theme-toggle-label">{theme === 'light' ? 'Dark' : 'Light'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Session */}
-        <div className="card animate-slide-up" style={{ animationDelay: '0.05s' }}>
-          <h2><span className="card-icon">{'\uD83D\uDD12'}</span> Session</h2>
-          <div style={{ marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--gray-500)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600 }}>Logged in as</div>
-            <div style={{ fontWeight: 700, marginTop: '0.4rem', fontSize: '0.95rem' }}>{user.email}</div>
-            <div className={`badge ${user.role === 'admin' ? 'badge-admin' : 'badge-user'}`} style={{ marginTop: '0.6rem' }}>
-              {user.role}
-            </div>
-          </div>
-          <button className="btn btn-danger" onClick={handleLogout} style={{ width: '100%' }}>
-            Logout
-          </button>
-        </div>
-
+      <div className="settings-stack">
         {/* Account Information */}
-        <div className="card full-width animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <h2><span className="card-icon">{'\uD83D\uDC64'}</span> Account Information</h2>
+        <div className="card animate-slide-up">
+          <h2><span className="card-icon"><UserRound size={15} strokeWidth={2.2} /></span> Account Information</h2>
           {accountMsg && <div className="feedback-success">{accountMsg}</div>}
           {accountErr && <div className="login-error">{accountErr}</div>}
           <form onSubmit={handleAccountSave}>
@@ -165,8 +116,8 @@ export default function SettingsPage() {
         </div>
 
         {/* Change Password */}
-        <div className="card full-width animate-slide-up" style={{ animationDelay: '0.15s' }}>
-          <h2><span className="card-icon">{'\uD83D\uDD10'}</span> Change Password</h2>
+        <div className="card animate-slide-up" style={{ animationDelay: '0.06s' }}>
+          <h2><span className="card-icon"><KeyRound size={15} strokeWidth={2.2} /></span> Change Password</h2>
           {pwMsg && <div className="feedback-success">{pwMsg}</div>}
           {pwErr && <div className="login-error">{pwErr}</div>}
           <form onSubmit={handlePasswordChange}>

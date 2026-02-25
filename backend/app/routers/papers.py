@@ -145,6 +145,47 @@ async def get_paper_status(
     )
 
 
+@router.post("/{paper_id:int}/retry", response_model=PaperStatusResponse)
+async def retry_paper(
+    paper_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(UploadedPaper).where(
+            UploadedPaper.id == paper_id,
+            UploadedPaper.user_id == current_user.id,
+        )
+    )
+    paper = result.scalar_one_or_none()
+    if not paper:
+        raise HTTPException(404, "Paper not found")
+    if paper.status != "failed":
+        raise HTTPException(400, "Only failed papers can be retried")
+
+    paper.status = "pending"
+    paper.error_message = None
+    await db.commit()
+    await db.refresh(paper)
+
+    file_path = settings.UPLOAD_DIR / paper.filename
+    if not file_path.exists():
+        raise HTTPException(400, "Original file no longer exists. Please re-upload.")
+
+    threading.Thread(
+        target=process_paper_background,
+        args=(paper.id, file_path, paper.file_type),
+        daemon=True,
+    ).start()
+
+    return PaperStatusResponse(
+        id=paper.id,
+        status=paper.status,
+        error_message=None,
+        question_count=0,
+    )
+
+
 @router.delete("/{paper_id:int}")
 async def delete_paper(
     paper_id: int,

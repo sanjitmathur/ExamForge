@@ -1,15 +1,40 @@
-import { NavLink } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Settings, UserRound, LogOut } from 'lucide-react';
 
 export default function Navbar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
 
   if (!user) return null;
 
   const isAdmin = user.role === 'admin';
+
+  const handleLogout = () => {
+    setMenuOpen(false);
+    logout();
+    navigate('/login');
+  };
+
+  const handleManageAccount = () => {
+    setMenuOpen(false);
+    navigate('/settings');
+  };
 
   return (
     <nav className={`navbar${isAdmin ? ' navbar-admin' : ''}`}>
@@ -43,9 +68,28 @@ export default function Navbar() {
         >
           {theme === 'light' ? <Moon size={15} strokeWidth={2} /> : <Sun size={15} strokeWidth={2} />}
         </button>
-        <NavLink to="/settings" className={({ isActive }) => `settings-link${isActive ? ' active' : ''}`} title="Settings">
-          &#9881;
-        </NavLink>
+        <div className="navbar-settings-wrap" ref={menuRef}>
+          <button
+            className={`settings-link${menuOpen ? ' active' : ''}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            title="Settings"
+          >
+            <Settings size={17} strokeWidth={2} />
+          </button>
+          {menuOpen && (
+            <div className="navbar-dropdown">
+              <button className="navbar-dropdown-item" onClick={handleManageAccount}>
+                <UserRound size={15} strokeWidth={2} />
+                Manage Account
+              </button>
+              <div className="navbar-dropdown-divider" />
+              <button className="navbar-dropdown-item danger" onClick={handleLogout}>
+                <LogOut size={15} strokeWidth={2} />
+                Log Out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );

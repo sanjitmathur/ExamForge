@@ -29,6 +29,14 @@ export default function GeneratePage() {
     setTopics(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
   };
 
+  const handleDeletePaper = async (id: number) => {
+    if (!confirm('Delete this generated paper?')) return;
+    try {
+      await generateAPI.delete(id);
+      setPapers(prev => prev.filter(p => p.id !== id));
+    } catch { /* ignore */ }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title || !board || !grade || !subject) {
@@ -153,12 +161,17 @@ export default function GeneratePage() {
           ) : (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Title</th><th>Status</th></tr></thead>
+                <thead><tr><th>Title</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                   {papers.map(p => (
                     <tr key={p.id}>
                       <td><Link to={`/paper/${p.id}`}>{p.title}</Link></td>
                       <td><span className={`badge badge-${p.status}`}>{p.status}</span></td>
+                      <td>
+                        <button className="btn btn-ghost btn-sm" onClick={() => handleDeletePaper(p.id)} title="Delete">
+                          &#10005;
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

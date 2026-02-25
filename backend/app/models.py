@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from .database import Base
@@ -19,6 +19,7 @@ class User(Base):
 
     uploaded_papers = relationship("UploadedPaper", back_populates="user", cascade="all, delete-orphan")
     generated_papers = relationship("GeneratedPaper", back_populates="user", cascade="all, delete-orphan")
+    learnings = relationship("UserLearning", back_populates="user", cascade="all, delete-orphan")
 
 
 class UploadedPaper(Base):
@@ -99,3 +100,17 @@ class Conversation(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     generated_paper = relationship("GeneratedPaper", back_populates="conversations")
+
+
+class UserLearning(Base):
+    __tablename__ = "user_learnings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    category = Column(String(50), nullable=False, default="general")  # formatting, content, style, structure, general
+    learning = Column(Text, nullable=False)
+    source_paper_id = Column(Integer, ForeignKey("generated_papers.id", ondelete="SET NULL"), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="learnings")
