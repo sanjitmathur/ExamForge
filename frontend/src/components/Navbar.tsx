@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -40,7 +41,7 @@ export default function Navbar() {
           onClick={toggleTheme}
           title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
-          {theme === 'light' ? '\u263D' : '\u2600'}
+          {theme === 'light' ? <Moon size={15} strokeWidth={2} /> : <Sun size={15} strokeWidth={2} />}
         </button>
         <NavLink to="/settings" className={({ isActive }) => `settings-link${isActive ? ' active' : ''}`} title="Settings">
           &#9881;

@@ -52,7 +52,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/login/admin" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <AdminLoginPage />} />
-        <Route path="/login/user" element={user ? <Navigate to="/" replace /> : <UserAuthPage />} />
+        <Route path="/login/user" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/'} replace /> : <UserAuthPage />} />
 
         {/* Admin-only routes */}
         <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
   --primary: #6366f1;
@@ -11,8 +11,8 @@
   --danger-hover: #dc2626;
   --success: #10b981;
   --warning: #f59e0b;
-  --gray-50: #f8f9fa;
-  --gray-100: #f1f3f5;
+  --gray-50: #f3f4f6;
+  --gray-100: #eceef2;
   --gray-200: #e2e5e9;
   --gray-300: #c9cdd3;
   --gray-400: #8b919a;
@@ -34,28 +34,74 @@
   --shadow-glow: 0 0 20px rgba(99,102,241,0.15);
   --admin-accent: #8b5cf6;
   --info: #0ea5e9;
-  --bg-surface: #ffffff;
-  --bg-page: #f4f5f7;
-  --bg-elevated: #ffffff;
-  --bg-subtle: #eef0f4;
+  --bg-surface: #f8f9fb;
+  --bg-page: #eff1f5;
+  --bg-elevated: #fdfdfe;
+  --bg-subtle: #e9ecf0;
   --border: rgba(0,0,0,0.07);
   --border-strong: rgba(0,0,0,0.11);
   --border-hover: rgba(0,0,0,0.16);
+
+  /* Landing page variables */
+  --lp-hero-bg: #f0f2f7;
+  --lp-glass-bg: rgba(248,249,251,0.6);
+  --lp-glass-border: rgba(255,255,255,0.5);
+  --lp-glass-shadow: 0 8px 32px rgba(0,0,0,0.05);
+  --lp-orb-1: rgba(99,102,241,0.12);
+  --lp-orb-2: rgba(139,92,246,0.10);
+  --lp-orb-3: rgba(14,165,233,0.08);
+  --lp-gradient-text-from: #6366f1;
+  --lp-gradient-text-to: #8b5cf6;
+  --lp-section-bg-alt: #e9ecf2;
+  --lp-step-line: rgba(99,102,241,0.18);
+  --lp-footer-bg: #eef0f4;
+
+  /* Card surface variables (light) */
+  --lp-card-bg: rgba(255,255,255,0.7);
+  --lp-card-bg-hover: rgba(255,255,255,0.85);
+  --lp-card-border-from: rgba(99,102,241,0.12);
+  --lp-card-border-to: rgba(139,92,246,0.08);
+  --lp-card-highlight: rgba(255,255,255,0.9);
+  --lp-card-highlight-hover: rgba(255,255,255,1);
+  --lp-card-glow: rgba(99,102,241,0.03);
+  --lp-card-glow-hover: rgba(99,102,241,0.06);
+  --lp-card-ambient: rgba(99,102,241,0.02);
+  --lp-card-ambient-hover: rgba(99,102,241,0.05);
+  --lp-card-noise-opacity: 0.025;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { transition: background-color 0.5s ease, color 0.5s ease; }
+/* ── Theme transition (View Transitions API) ──
+   The browser screenshots the old state and crossfades to the new one,
+   so every pixel transitions smoothly — text, backgrounds, borders, everything. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+}
+
+/* Fallback for browsers without View Transitions API */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: color 0.5s ease,
+              background-color 0.5s ease,
+              border-color 0.5s ease,
+              box-shadow 0.5s ease,
+              fill 0.5s ease,
+              stroke 0.5s ease !important;
+}
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--gray-900);
   background: var(--bg-page);
   line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
@@ -107,6 +153,33 @@ a:hover { color: var(--primary-hover); }
   --border-strong: rgba(255,255,255,0.08);
   --border-hover: rgba(255,255,255,0.12);
   color-scheme: dark;
+
+  /* Landing page variables (dark) */
+  --lp-hero-bg: #08080b;
+  --lp-glass-bg: rgba(21,21,24,0.55);
+  --lp-glass-border: rgba(255,255,255,0.06);
+  --lp-glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  --lp-orb-1: rgba(99,102,241,0.18);
+  --lp-orb-2: rgba(139,92,246,0.14);
+  --lp-orb-3: rgba(14,165,233,0.10);
+  --lp-gradient-text-from: #818cf8;
+  --lp-gradient-text-to: #a78bfa;
+  --lp-section-bg-alt: #0d0d11;
+  --lp-step-line: rgba(129,140,248,0.14);
+  --lp-footer-bg: #08080b;
+
+  /* Card surface variables (dark) */
+  --lp-card-bg: rgba(255,255,255,0.03);
+  --lp-card-bg-hover: rgba(255,255,255,0.055);
+  --lp-card-border-from: rgba(129,140,248,0.2);
+  --lp-card-border-to: rgba(168,85,247,0.12);
+  --lp-card-highlight: rgba(255,255,255,0.06);
+  --lp-card-highlight-hover: rgba(255,255,255,0.1);
+  --lp-card-glow: rgba(99,102,241,0.03);
+  --lp-card-glow-hover: rgba(99,102,241,0.07);
+  --lp-card-ambient: rgba(99,102,241,0.02);
+  --lp-card-ambient-hover: rgba(99,102,241,0.05);
+  --lp-card-noise-opacity: 0.04;
 }
 
 [data-theme="dark"] body {

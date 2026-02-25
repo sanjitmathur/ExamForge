@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { authAPI } from '../services/api';
+import { Sun, Moon } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, logout, updateUser } = useAuth();
@@ -108,7 +109,7 @@ export default function SettingsPage() {
             >
               <span className="theme-toggle-track">
                 <span className="theme-toggle-thumb">
-                  {theme === 'light' ? '\u263D' : '\u2600'}
+                  {theme === 'light' ? <Moon size={12} strokeWidth={2.5} /> : <Sun size={12} strokeWidth={2.5} />}
                 </span>
               </span>
               <span className="theme-toggle-label">{theme === 'light' ? 'Dark' : 'Light'}</span>

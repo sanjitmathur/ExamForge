@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { FileUp, HelpCircle, Zap, BookOpen, Upload, Rocket } from 'lucide-react';
 import { papersAPI, questionsAPI, generateAPI } from '../services/api';
 import type { UploadedPaper, GeneratedPaperListItem, QuestionStats } from '../types';
 
 const COLORS = ['#6366f1', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
+
+const STAT_ICONS = [
+  <FileUp size={20} strokeWidth={1.8} />,
+  <HelpCircle size={20} strokeWidth={1.8} />,
+  <Zap size={20} strokeWidth={1.8} />,
+  <BookOpen size={20} strokeWidth={1.8} />,
+];
 
 export default function DashboardPage() {
   const [papers, setPapers] = useState<UploadedPaper[]>([]);
@@ -21,10 +29,10 @@ export default function DashboardPage() {
     Object.entries(obj).map(([name, value]) => ({ name, value }));
 
   const statCards = [
-    { label: 'Papers Uploaded', value: papers.length, color: '#6366f1' },
-    { label: 'Questions Extracted', value: stats?.total_questions ?? 0, color: '#06b6d4' },
-    { label: 'Papers Generated', value: generated.length, color: '#10b981' },
-    { label: 'Subjects Covered', value: stats ? Object.keys(stats.by_subject).length : 0, color: '#f59e0b' },
+    { label: 'Papers Uploaded', value: papers.length },
+    { label: 'Questions Extracted', value: stats?.total_questions ?? 0 },
+    { label: 'Papers Generated', value: generated.length },
+    { label: 'Subjects Covered', value: stats ? Object.keys(stats.by_subject).length : 0 },
   ];
 
   return (
@@ -34,19 +42,24 @@ export default function DashboardPage() {
         <p>Overview of your exam paper library</p>
       </div>
 
-      <div className="stats-grid">
-        {statCards.map(card => (
-          <div key={card.label} className="stat-card" style={{ borderTop: `3px solid ${card.color}` }}>
-            <div className="stat-label">{card.label}</div>
-            <div className="stat-value">{card.value}</div>
+      {/* Stat Cards */}
+      <div className="dash-stats-grid">
+        {statCards.map((card, i) => (
+          <div key={card.label} className="dash-stat-card" style={{ animationDelay: `${i * 0.06}s` }}>
+            <div className="dash-stat-icon">{STAT_ICONS[i]}</div>
+            <div className="dash-stat-info">
+              <div className="dash-stat-value">{card.value}</div>
+              <div className="dash-stat-label">{card.label}</div>
+            </div>
           </div>
         ))}
       </div>
 
+      {/* Charts */}
       {stats && stats.total_questions > 0 && (
-        <div className="grid-2" style={{ marginBottom: '1.5rem' }}>
-          <div className="card">
-            <h3 style={{ fontSize: '0.95rem', marginBottom: '1rem', fontWeight: 700 }}>Questions by Type</h3>
+        <div className="grid-2 dash-charts">
+          <div className="dash-glass-card">
+            <h3 className="dash-card-title">Questions by Type</h3>
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie data={toPieData(stats.by_type)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} innerRadius={45} label strokeWidth={0}>
@@ -54,18 +67,18 @@ export default function DashboardPage() {
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '0.8rem' }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="card">
-            <h3 style={{ fontSize: '0.95rem', marginBottom: '1rem', fontWeight: 700 }}>Questions by Difficulty</h3>
+          <div className="dash-glass-card">
+            <h3 className="dash-card-title">Questions by Difficulty</h3>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={toPieData(stats.by_difficulty)} barCategoryGap="30%">
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontSize: '0.8rem' }} cursor={{ fill: 'rgba(99,102,241,0.04)' }} />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--gray-500)' }} axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--gray-500)' }} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} cursor={{ fill: 'rgba(99,102,241,0.04)' }} />
                 <Bar dataKey="value" fill="#6366f1" radius={[8,8,0,0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -73,16 +86,18 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Tables */}
       <div className="grid-2">
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Recent Uploads</h3>
-            <Link to="/upload" className="btn btn-outline btn-sm">Upload</Link>
+        <div className="dash-glass-card">
+          <div className="dash-card-header">
+            <h3 className="dash-card-title">Recent Uploads</h3>
+            <Link to="/upload" className="dash-action-btn"><Upload size={14} strokeWidth={2} /> Upload</Link>
           </div>
           {papers.length === 0 ? (
-            <div className="empty-state" style={{ padding: '2rem' }}>
-              <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>&#128196;</p>
-              <p>No papers yet</p>
+            <div className="dash-empty">
+              <div className="dash-empty-icon"><FileUp size={28} strokeWidth={1.5} /></div>
+              <p>No papers uploaded yet</p>
+              <Link to="/upload" className="dash-empty-link">Upload your first paper &rarr;</Link>
             </div>
           ) : (
             <div className="table-wrap">
@@ -102,15 +117,16 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Recent Generated Papers</h3>
-            <Link to="/generate" className="btn btn-outline btn-sm">Generate</Link>
+        <div className="dash-glass-card">
+          <div className="dash-card-header">
+            <h3 className="dash-card-title">Recent Generated Papers</h3>
+            <Link to="/generate" className="dash-action-btn"><Rocket size={14} strokeWidth={2} /> Generate</Link>
           </div>
           {generated.length === 0 ? (
-            <div className="empty-state" style={{ padding: '2rem' }}>
-              <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>&#9889;</p>
+            <div className="dash-empty">
+              <div className="dash-empty-icon"><Zap size={28} strokeWidth={1.5} /></div>
               <p>No papers generated yet</p>
+              <Link to="/generate" className="dash-empty-link">Generate your first paper &rarr;</Link>
             </div>
           ) : (
             <div className="table-wrap">

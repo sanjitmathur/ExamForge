@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authAPI } from '../services/api';
 
 export default function UserAuthPage() {
-  const [tab, setTab] = useState<'login' | 'signup'>('login');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'signup' ? 'signup' : 'login';
+  const [tab, setTab] = useState<'login' | 'signup'>(initialTab);
   const [identifier, setIdentifier] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -33,7 +35,7 @@ export default function UserAuthPage() {
     try {
       const res = await authAPI.login({ identifier, password });
       login(res.data.access_token, res.data.user);
-      navigate('/');
+      navigate(res.data.user.role === 'admin' ? '/admin' : '/');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed');
     } finally {
@@ -54,7 +56,7 @@ export default function UserAuthPage() {
         school_name: schoolName || undefined,
       });
       login(res.data.access_token, res.data.user);
-      navigate('/');
+      navigate(res.data.user.role === 'admin' ? '/admin' : '/');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Registration failed');
     } finally {
@@ -96,6 +98,9 @@ export default function UserAuthPage() {
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? <span className="spinner" /> : 'Sign In'}
             </button>
+            <div className="admin-login-link">
+              <Link to="/login/admin">Login as Admin &rarr;</Link>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleSignup}>
