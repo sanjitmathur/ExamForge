@@ -21,6 +21,9 @@ node_modules/
 dist/
 .vite/
 
+# Claude Code
+.claude/settings.local.json
+
 # IDE
 .idea/
 *.swp
