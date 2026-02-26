@@ -2,6 +2,8 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 aiosqlite
+asyncpg
+psycopg2-binary
 python-jose[cryptography]
 passlib[bcrypt]
 google-genai

@@ -1,8 +1,10 @@
 import json
 import threading
+from datetime import date, datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
+from ..config import settings
 from ..database import get_db
 from ..models import User, GeneratedPaper, Conversation, UserLearning
 from ..schemas import (
@@ -21,6 +23,21 @@ async def create_paper(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # Rate limit: max papers per day
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    count_result = await db.execute(
+        select(func.count(GeneratedPaper.id)).where(
+            GeneratedPaper.user_id == current_user.id,
+            GeneratedPaper.created_at >= today_start,
+        )
+    )
+    today_count = count_result.scalar() or 0
+    if today_count >= settings.RATE_LIMIT_PAPERS_PER_DAY:
+        raise HTTPException(
+            429,
+            f"Daily limit reached ({settings.RATE_LIMIT_PAPERS_PER_DAY} papers/day). Try again tomorrow.",
+        )
+
     paper = GeneratedPaper(
         user_id=current_user.id,
         title=data.title,
