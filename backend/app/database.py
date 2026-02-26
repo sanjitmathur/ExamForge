@@ -8,11 +8,13 @@ class Base(DeclarativeBase):
     pass
 
 
-# asyncpg doesn't understand ?sslmode=require, it needs ?ssl=require
-_async_url = settings.DATABASE_URL.replace("?sslmode=require", "?ssl=require")
+# asyncpg doesn't understand Neon's query params (sslmode, channel_binding, etc.)
+# Strip them and pass ssl=require via connect_args instead
+_async_url = settings.DATABASE_URL.split("?")[0]
+_async_connect_args = {"ssl": "require"} if "postgresql" in settings.DATABASE_URL else {}
 
 # Async engine for API routes
-async_engine = create_async_engine(_async_url, echo=False)
+async_engine = create_async_engine(_async_url, echo=False, connect_args=_async_connect_args)
 AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 # Sync engine for background threads
