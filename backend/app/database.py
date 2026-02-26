@@ -8,8 +8,11 @@ class Base(DeclarativeBase):
     pass
 
 
+# asyncpg doesn't understand ?sslmode=require, it needs ?ssl=require
+_async_url = settings.DATABASE_URL.replace("?sslmode=require", "?ssl=require")
+
 # Async engine for API routes
-async_engine = create_async_engine(settings.DATABASE_URL, echo=False)
+async_engine = create_async_engine(_async_url, echo=False)
 AsyncSessionLocal = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 # Sync engine for background threads
