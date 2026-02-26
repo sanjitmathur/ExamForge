@@ -12,6 +12,7 @@ PyMuPDF
 python-docx
 pytesseract
 Pillow
+python-bidi==0.6.3
 xhtml2pdf
 markdown
 python-dotenv
