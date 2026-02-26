@@ -24,7 +24,7 @@ export default function ViewPaperPage() {
   const [loading, setLoading] = useState(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function ViewPaperPage() {
         const res = await generateAPI.status(paperId);
         if (res.data.status !== 'generating') {
           clearInterval(pollRef.current!);
-          pollRef.current = undefined;
+          pollRef.current = null;
           loadPaper();
         }
       } catch {
