@@ -60,7 +60,7 @@ export default function ViewPaperPage() {
         }
       } catch {
         clearInterval(pollRef.current!);
-        pollRef.current = undefined;
+        pollRef.current = null;
       }
     }, 2000);
   };
