@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
@@ -6,6 +7,8 @@ from ..models import User
 from ..schemas import UserCreate, UserLogin, UserResponse, TokenResponse, ProfileUpdate
 from ..utils.auth import hash_password, verify_password, create_access_token
 from ..utils.deps import get_current_user
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -43,18 +46,22 @@ async def register(data: UserCreate, db: AsyncSession = Depends(get_db)):
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Username already taken")
 
-    user = User(
-        email=data.email,
-        username=data.username,
-        hashed_password=hash_password(data.password),
-        plain_password=data.password,
-        full_name=data.full_name,
-        school_name=data.school_name,
-        role="user",
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    try:
+        user = User(
+            email=data.email,
+            username=data.username,
+            hashed_password=hash_password(data.password),
+            plain_password=data.password,
+            full_name=data.full_name,
+            school_name=data.school_name,
+            role="user",
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    except Exception as e:
+        logger.exception("Registration DB error")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {type(e).__name__}: {e}")
 
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(

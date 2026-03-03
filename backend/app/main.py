@@ -51,4 +51,4 @@ app.include_router(export.router)
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok"}
+    return {"status": "ok", "version": "2"}
