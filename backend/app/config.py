@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 20
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
     RATE_LIMIT_PAPERS_PER_DAY: int = 10
+    KEEP_ALIVE_URL: str = ""  # Set to public health URL to prevent Render free-tier spin-down
 
     class Config:
         env_file = ".env"
