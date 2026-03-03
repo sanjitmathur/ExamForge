@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { FileUp, HelpCircle, Zap, BookOpen, Upload, Rocket } from 'lucide-react';
+import { FileUp, HelpCircle, Zap, BookOpen, Upload, Rocket, Check, ChevronRight, Sparkles } from 'lucide-react';
 import { papersAPI, questionsAPI, generateAPI } from '../services/api';
 import type { UploadedPaper, GeneratedPaperListItem, QuestionStats } from '../types';
-
-const COLORS = ['#6366f1', '#06b6d4', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
 
 const STAT_ICONS = [
   <FileUp size={20} strokeWidth={1.8} />,
@@ -25,14 +22,20 @@ export default function DashboardPage() {
     questionsAPI.stats().then(r => setStats(r.data)).catch(() => {});
   }, []);
 
-  const toPieData = (obj: Record<string, number>) =>
-    Object.entries(obj).map(([name, value]) => ({ name, value }));
-
   const statCards = [
     { label: 'Papers Uploaded', value: papers.length },
     { label: 'Questions Extracted', value: stats?.total_questions ?? 0 },
     { label: 'Papers Generated', value: generated.length },
     { label: 'Subjects Covered', value: stats ? Object.keys(stats.by_subject).length : 0 },
+  ];
+
+  const allZero = statCards.every(c => c.value === 0);
+  const questionCount = stats?.total_questions ?? 0;
+
+  const workflowSteps = [
+    { label: 'Upload Papers', to: '/upload', count: papers.length, done: papers.length > 0 },
+    { label: 'Question Bank', to: '/questions', count: questionCount, done: questionCount > 0 },
+    { label: 'Generate Paper', to: '/generate', count: generated.length, done: generated.length > 0 },
   ];
 
   return (
@@ -42,47 +45,55 @@ export default function DashboardPage() {
         <p>Overview of your exam paper library</p>
       </div>
 
-      {/* Stat Cards */}
-      <div className="dash-stats-grid">
-        {statCards.map((card, i) => (
-          <div key={card.label} className="dash-stat-card" style={{ animationDelay: `${i * 0.06}s` }}>
-            <div className="dash-stat-icon">{STAT_ICONS[i]}</div>
-            <div className="dash-stat-info">
-              <div className="dash-stat-value">{card.value}</div>
-              <div className="dash-stat-label">{card.label}</div>
-            </div>
+      {/* Onboarding banner for new users */}
+      {allZero && (
+        <div className="onboarding-banner">
+          <div className="onboarding-banner-icon">
+            <Sparkles size={18} strokeWidth={2} />
+          </div>
+          <div className="onboarding-banner-text">
+            <strong>Welcome to ExamForge!</strong> Start by uploading a previous exam paper.
+            We'll extract questions into your bank, then you can generate new papers with AI.
+          </div>
+        </div>
+      )}
+
+      {/* Workflow steps — always visible */}
+      <div className="workflow-steps">
+        {workflowSteps.map((step, i) => (
+          <div key={step.label} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <Link to={step.to} className={`workflow-step${step.done ? ' completed' : ''}`}>
+              <div className="workflow-step-num">
+                {step.done ? <Check size={16} strokeWidth={2.5} /> : i + 1}
+              </div>
+              <div className="workflow-step-info">
+                <span className="workflow-step-label">{step.label}</span>
+                {step.count > 0 && (
+                  <span className="workflow-step-count">{step.count} {step.count === 1 ? 'item' : 'items'}</span>
+                )}
+              </div>
+            </Link>
+            {i < workflowSteps.length - 1 && (
+              <span className="workflow-step-arrow">
+                <ChevronRight size={18} strokeWidth={2} />
+              </span>
+            )}
           </div>
         ))}
       </div>
 
-      {/* Charts */}
-      {stats && stats.total_questions > 0 && (
-        <div className="grid-2 dash-charts">
-          <div className="dash-glass-card">
-            <h3 className="dash-card-title">Questions by Type</h3>
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie data={toPieData(stats.by_type)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} innerRadius={45} label strokeWidth={0}>
-                  {toPieData(stats.by_type).map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} itemStyle={{ color: 'var(--gray-800)' }} labelStyle={{ color: 'var(--gray-800)' }} />
-                <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="dash-glass-card">
-            <h3 className="dash-card-title">Questions by Difficulty</h3>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={toPieData(stats.by_difficulty)} barCategoryGap="30%">
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--gray-500)' }} axisLine={false} tickLine={false} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: 'var(--gray-500)' }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-lg)', fontSize: '0.8rem', color: 'var(--gray-800)' }} itemStyle={{ color: 'var(--gray-800)' }} labelStyle={{ color: 'var(--gray-800)' }} cursor={{ fill: 'rgba(99,102,241,0.04)' }} />
-                <Bar dataKey="value" fill="#6366f1" radius={[8,8,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+      {/* Stat Cards — hidden when all zero */}
+      {!allZero && (
+        <div className="dash-stats-grid">
+          {statCards.map((card, i) => (
+            <div key={card.label} className="dash-stat-card">
+              <div className="dash-stat-icon">{STAT_ICONS[i]}</div>
+              <div className="dash-stat-info">
+                <div className="dash-stat-value">{card.value}</div>
+                <div className="dash-stat-label">{card.label}</div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

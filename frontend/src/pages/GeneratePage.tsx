@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
 import { generateAPI, questionsAPI } from '../services/api';
 import { BOARDS, GRADES, SUBJECTS, DIFFICULTIES } from '../constants';
 import type { GeneratedPaperListItem } from '../types';
@@ -19,6 +20,7 @@ export default function GeneratePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [papers, setPapers] = useState<GeneratedPaperListItem[]>([]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     generateAPI.list().then(r => setPapers(r.data)).catch(() => {});
@@ -60,6 +62,8 @@ export default function GeneratePage() {
     }
   };
 
+  const totalQuestions = Object.values(difficultyMix).reduce((a, b) => a + b, 0);
+
   return (
     <div className="page">
       <div className="page-header">
@@ -67,34 +71,34 @@ export default function GeneratePage() {
         <p>Create a new AI-generated exam paper from your question bank</p>
       </div>
 
-      <div className="grid-2">
-        <div className="card">
+      <div>
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
           <form onSubmit={handleSubmit}>
             {error && <div className="login-error">{error}</div>}
 
             <div className="form-group">
-              <label>Paper Title *</label>
+              <label>Paper Title <span className="required-star">*</span></label>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="e.g. Mid-Term Examination 2026" required />
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label>Board *</label>
+                <label>Board <span className="required-star">*</span></label>
                 <select value={board} onChange={e => setBoard(e.target.value)} required>
                   <option value="">Select</option>
                   {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Grade *</label>
+                <label>Grade <span className="required-star">*</span></label>
                 <select value={grade} onChange={e => setGrade(e.target.value)} required>
                   <option value="">Select</option>
                   {GRADES.map(g => <option key={g} value={g}>Grade {g}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>Subject *</label>
+                <label>Subject <span className="required-star">*</span></label>
                 <select value={subject} onChange={e => setSubject(e.target.value)} required>
                   <option value="">Select</option>
                   {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -102,60 +106,72 @@ export default function GeneratePage() {
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Total Marks</label>
-                <input type="number" value={totalMarks} onChange={e => setTotalMarks(Number(e.target.value))} min={10} />
-              </div>
-              <div className="form-group">
-                <label>Duration (minutes)</label>
-                <input type="number" value={duration} onChange={e => setDuration(Number(e.target.value))} min={15} />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>Difficulty Mix</label>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                {DIFFICULTIES.map(d => (
-                  <div key={d.value} style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.8rem' }}>{d.label}</label>
-                    <input type="number" min={0} max={20}
-                      value={difficultyMix[d.value] || 0}
-                      onChange={e => setDifficultyMix(prev => ({ ...prev, [d.value]: Number(e.target.value) }))}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {availableTopics.length > 0 && (
-              <div className="form-group">
-                <label>Topics (optional)</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {availableTopics.map(t => (
-                    <button key={t} type="button"
-                      className={`btn btn-sm ${topics.includes(t) ? 'btn-primary' : 'btn-outline'}`}
-                      onClick={() => toggleTopic(t)}
-                    >{t}</button>
-                  ))}
+            {/* Collapsible Advanced Options */}
+            <button
+              type="button"
+              className="collapsible-header"
+              onClick={() => setShowAdvanced(prev => !prev)}
+            >
+              <span className="collapsible-header-label">Advanced Options</span>
+              <ChevronDown size={18} className={`collapsible-chevron${showAdvanced ? ' open' : ''}`} />
+            </button>
+            <div className={`collapsible-body${showAdvanced ? ' open' : ''}`}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Total Marks</label>
+                  <input type="number" value={totalMarks} onChange={e => setTotalMarks(Number(e.target.value))} min={10} />
+                </div>
+                <div className="form-group">
+                  <label>Duration (minutes)</label>
+                  <input type="number" value={duration} onChange={e => setDuration(Number(e.target.value))} min={15} />
                 </div>
               </div>
-            )}
 
-            <div className="form-group">
-              <label>Additional Instructions</label>
-              <textarea value={instructions} onChange={e => setInstructions(e.target.value)}
-                placeholder="Any specific requirements for the paper..." />
+              <div className="form-group">
+                <label>Difficulty Mix</label>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                  {DIFFICULTIES.map(d => (
+                    <div key={d.value} style={{ flex: 1 }}>
+                      <label style={{ fontSize: '0.8rem' }}>{d.label}</label>
+                      <input type="number" min={0} max={20}
+                        value={difficultyMix[d.value] || 0}
+                        onChange={e => setDifficultyMix(prev => ({ ...prev, [d.value]: Number(e.target.value) }))}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="form-hint">Number of questions per difficulty level. Total: {totalQuestions} questions</div>
+              </div>
+
+              {availableTopics.length > 0 && (
+                <div className="form-group">
+                  <label>Topics (optional)</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    {availableTopics.map(t => (
+                      <button key={t} type="button"
+                        className={`btn btn-sm ${topics.includes(t) ? 'btn-primary' : 'btn-outline'}`}
+                        onClick={() => toggleTopic(t)}
+                      >{t}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="form-group">
+                <label>Additional Instructions</label>
+                <textarea value={instructions} onChange={e => setInstructions(e.target.value)}
+                  placeholder="Any specific requirements for the paper..." />
+              </div>
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '0.5rem' }}>
               {loading ? <><span className="spinner" /> Generating...</> : 'Generate Paper'}
             </button>
           </form>
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>Previously Generated</h3>
+          <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem', fontWeight: 700 }}>Previously Generated</h3>
           {papers.length === 0 ? (
             <div className="empty-state"><p>No papers generated yet</p></div>
           ) : (

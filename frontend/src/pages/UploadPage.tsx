@@ -1,7 +1,38 @@
 import { useState, useRef, useEffect, type FormEvent, type DragEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { papersAPI } from '../services/api';
 import { BOARDS, GRADES, SUBJECTS } from '../constants';
 import type { UploadedPaper } from '../types';
+
+const STATUS_CONFIG: Record<string, { label: string; dots: number; active?: boolean; error?: boolean }> = {
+  pending:    { label: 'Queued', dots: 0, active: true },
+  extracting: { label: 'Reading document...', dots: 1, active: true },
+  analyzing:  { label: 'Extracting questions...', dots: 2, active: true },
+  completed:  { label: 'Done', dots: 3 },
+  failed:     { label: 'Failed', dots: 0, error: true },
+};
+
+function StatusDots({ status }: { status: string }) {
+  const config = STATUS_CONFIG[status] || { label: status, dots: 0 };
+  const totalDots = 3;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div className="status-dots">
+        {Array.from({ length: totalDots }).map((_, i) => (
+          <span
+            key={i}
+            className={`status-dot${
+              config.error ? ' error' :
+              i < config.dots ? ' filled' :
+              i === config.dots && config.active ? ' active' : ''
+            }`}
+          />
+        ))}
+      </div>
+      <span className="status-label">{config.label}</span>
+    </div>
+  );
+}
 
 export default function UploadPage() {
   const [board, setBoard] = useState('');
@@ -103,6 +134,8 @@ export default function UploadPage() {
     if (f) setFile(f);
   };
 
+  const hasCompletedPapers = papers.some(p => p.status === 'completed' && p.question_count > 0);
+
   return (
     <div className="page">
       <div className="page-header">
@@ -115,21 +148,21 @@ export default function UploadPage() {
           {error && <div className="login-error">{error}</div>}
           <div className="form-row">
             <div className="form-group">
-              <label>Board</label>
+              <label>Board <span className="required-star">*</span></label>
               <select value={board} onChange={e => setBoard(e.target.value)} required>
                 <option value="">Select board</option>
                 {BOARDS.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label>Grade</label>
+              <label>Grade <span className="required-star">*</span></label>
               <select value={grade} onChange={e => setGrade(e.target.value)} required>
                 <option value="">Select grade</option>
                 {GRADES.map(g => <option key={g} value={g}>Grade {g}</option>)}
               </select>
             </div>
             <div className="form-group">
-              <label>Subject</label>
+              <label>Subject <span className="required-star">*</span></label>
               <select value={subject} onChange={e => setSubject(e.target.value)} required>
                 <option value="">Select subject</option>
                 {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
@@ -184,43 +217,50 @@ export default function UploadPage() {
             <p>No papers uploaded yet</p>
           </div>
         ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>File</th>
-                  <th>Board</th>
-                  <th>Grade</th>
-                  <th>Subject</th>
-                  <th>Status</th>
-                  <th>Questions</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {papers.map(p => (
-                  <tr key={p.id}>
-                    <td style={{ fontWeight: 500 }}>{p.original_filename}</td>
-                    <td>{p.board || '-'}</td>
-                    <td>{p.grade_level || '-'}</td>
-                    <td>{p.subject || '-'}</td>
-                    <td><span className={`badge badge-${p.status}`}>{p.status}</span></td>
-                    <td style={{ fontWeight: 600 }}>{p.question_count}</td>
-                    <td style={{ display: 'flex', gap: '0.25rem' }}>
-                      {p.status === 'failed' && (
-                        <button className="btn btn-ghost btn-sm" onClick={() => handleRetry(p.id)} title="Retry analysis">
-                          &#8635;
-                        </button>
-                      )}
-                      <button className="btn btn-ghost btn-sm" onClick={() => handleDelete(p.id)} title="Delete">
-                        &#10005;
-                      </button>
-                    </td>
+          <>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>File</th>
+                    <th>Subject</th>
+                    <th>Progress</th>
+                    <th>Questions</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {papers.map(p => (
+                    <tr key={p.id}>
+                      <td style={{ fontWeight: 500 }}>{p.original_filename}</td>
+                      <td>{p.subject || '-'}</td>
+                      <td><StatusDots status={p.status} /></td>
+                      <td style={{ fontWeight: 600 }}>{p.question_count}</td>
+                      <td style={{ display: 'flex', gap: '0.25rem' }}>
+                        {p.status === 'failed' && (
+                          <button className="btn btn-ghost btn-sm" onClick={() => handleRetry(p.id)} title="Retry analysis">
+                            &#8635;
+                          </button>
+                        )}
+                        <button className="btn btn-ghost btn-sm" onClick={() => handleDelete(p.id)} title="Delete">
+                          &#10005;
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Post-upload guidance */}
+            {hasCompletedPapers && (
+              <div className="upload-guidance">
+                <div className="upload-guidance-text">
+                  Questions extracted! <Link to="/questions">View Question Bank</Link> or <Link to="/generate">Generate a Paper</Link>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

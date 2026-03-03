@@ -197,21 +197,29 @@ export default function ViewPaperPage() {
         <h1 style={{ fontSize: '1.25rem' }}>{paper.title}</h1>
       </div>
 
-      <div className="export-buttons">
-        <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.paperPdf, `${paper.title}.pdf`)}>
-          Paper PDF
-        </button>
-        <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.paperWord, `${paper.title}.docx`)}>
-          Paper Word
-        </button>
-        <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.answerKeyPdf, `${paper.title} - Answer Key.pdf`)}>
-          Answer Key PDF
-        </button>
-        <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.answerKeyWord, `${paper.title} - Answer Key.docx`)}>
-          Answer Key Word
-        </button>
+      <div className="export-group">
+        <div className="export-group-section">
+          <span className="export-group-label">Paper</span>
+          <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.paperPdf, `${paper.title}.pdf`)}>
+            PDF
+          </button>
+          <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.paperWord, `${paper.title}.docx`)}>
+            Word
+          </button>
+        </div>
+        <div className="export-group-divider" />
+        <div className="export-group-section">
+          <span className="export-group-label">Answer Key</span>
+          <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.answerKeyPdf, `${paper.title} - Answer Key.pdf`)}>
+            PDF
+          </button>
+          <button className="btn btn-outline btn-sm" onClick={() => downloadFile(exportAPI.answerKeyWord, `${paper.title} - Answer Key.docx`)}>
+            Word
+          </button>
+        </div>
+        <div className="export-group-spacer" />
         <button className="btn btn-ghost btn-sm" onClick={handleDelete} style={{ color: 'var(--danger)' }}>
-          Delete Paper
+          Delete
         </button>
       </div>
 

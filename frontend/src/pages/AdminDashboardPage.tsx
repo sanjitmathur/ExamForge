@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
 
       <div className="dash-stats-grid">
         {statCards.map((card, i) => (
-          <div key={card.label} className="dash-stat-card" style={{ animationDelay: `${i * 0.06}s` }}>
+          <div key={card.label} className="dash-stat-card">
             <div className="dash-stat-icon">{STAT_ICONS[i]}</div>
             <div className="dash-stat-info">
               <div className="dash-stat-value">{card.value}</div>
