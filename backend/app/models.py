@@ -1,6 +1,10 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
+
+
+def _utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 from .database import Base
 
 
@@ -15,7 +19,7 @@ class User(Base):
     full_name = Column(String(255), nullable=False)
     school_name = Column(String(255), nullable=True)
     role = Column(String(20), default="user")
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=_utcnow)
 
     uploaded_papers = relationship("UploadedPaper", back_populates="user", cascade="all, delete-orphan")
     generated_papers = relationship("GeneratedPaper", back_populates="user", cascade="all, delete-orphan")
@@ -37,7 +41,7 @@ class UploadedPaper(Base):
     subject = Column(String(100), nullable=True)
     topics_json = Column(Text, nullable=True)  # JSON array of topic strings
     error_message = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=_utcnow)
 
     user = relationship("User", back_populates="uploaded_papers")
     questions = relationship("ExtractedQuestion", back_populates="paper", cascade="all, delete-orphan")
@@ -83,7 +87,7 @@ class GeneratedPaper(Base):
     content_markdown = Column(Text, nullable=True)
     answer_key_markdown = Column(Text, nullable=True)
     error_message = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=_utcnow)
 
     user = relationship("User", back_populates="generated_papers")
     conversations = relationship("Conversation", back_populates="generated_paper", cascade="all, delete-orphan")
@@ -97,7 +101,7 @@ class Conversation(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     role = Column(String(10), nullable=False)  # user, assistant
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=_utcnow)
 
     generated_paper = relationship("GeneratedPaper", back_populates="conversations")
 
@@ -111,6 +115,6 @@ class UserLearning(Base):
     learning = Column(Text, nullable=False)
     source_paper_id = Column(Integer, ForeignKey("generated_papers.id", ondelete="SET NULL"), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, default=_utcnow)
 
     user = relationship("User", back_populates="learnings")
