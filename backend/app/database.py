@@ -45,20 +45,28 @@ async def get_db():
 async def init_db():
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # SQLite-only migrations (Postgres gets correct schema from create_all)
-        if settings.DATABASE_URL.startswith("sqlite"):
-            # Migrate existing DBs: add role column if missing
+        # Migrate existing DBs: add missing columns
+        # (create_all only creates new tables, it won't ALTER existing ones)
+        if "postgresql" in settings.DATABASE_URL:
+            await conn.execute(
+                text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'user'")
+            )
+            await conn.execute(
+                text("UPDATE users SET role = 'admin' WHERE role IS NULL")
+            )
+            await conn.execute(
+                text("ALTER TABLE users ADD COLUMN IF NOT EXISTS plain_password VARCHAR(255)")
+            )
+        else:
             try:
                 await conn.execute(
                     text("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'user'")
                 )
             except Exception:
                 pass  # Column already exists
-            # Set existing users (who have NULL role) to admin
             await conn.execute(
                 text("UPDATE users SET role = 'admin' WHERE role IS NULL")
             )
-            # Migrate: add plain_password column if missing
             try:
                 await conn.execute(
                     text("ALTER TABLE users ADD COLUMN plain_password VARCHAR(255)")

@@ -1,73 +1,57 @@
-# React + TypeScript + Vite
+# ExamForge — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript frontend for ExamForge, the AI-powered question paper generator.
 
-Currently, two official plugins are available:
+**Live App:** [https://exam-forge-gray.vercel.app](https://exam-forge-gray.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
 
-## React Compiler
+- **React 19** with TypeScript
+- **Vite** for build tooling and HMR
+- **React Router DOM** for client-side routing
+- **Axios** for HTTP requests
+- **Recharts** for dashboard charts
+- **Lucide React** for icons
+- **React Markdown** for rendering AI-generated content
+- CSS custom properties for theming (dark / light mode with View Transitions API)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting Started
 
-## Expanding the ESLint configuration
+```bash
+# Install dependencies
+npm install
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+# Start development server (http://localhost:5173)
+npm run dev
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Build for production
+npm run build
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Preview production build
+npm run preview
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Lint
+npm run lint
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Pages
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Dashboard | User home with paper stats and charts |
+| `/login` | Landing Page | Public landing with scroll-reveal sections |
+| `/login/user` | User Auth | Login form |
+| `/login/admin` | Admin Login | Admin login form |
+| `/signup` | Sign Up | New user registration |
+| `/upload` | Upload | Drag-and-drop paper upload |
+| `/questions` | Questions | Browse and filter extracted question bank |
+| `/generate` | Generate | Configure and create new papers |
+| `/paper/:id` | View Paper | Paper view with chat refinement sidebar |
+| `/settings` | Settings | Profile and password management |
+| `/admin` | Admin Dashboard | Platform stats and charts |
+| `/admin/users` | Admin Users | User management list |
+| `/admin/users/:id` | User Detail | Per-user stats and history |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Deployment
+
+Deployed on Vercel. API requests are proxied to the backend via rewrites in `vercel.json`.
