@@ -105,7 +105,6 @@ export default function LoginPage() {
             <button type="button" onClick={() => scrollToSection('lp-how')}>How It Works</button>
           </div>
           <div className="lp-nav-actions">
-            <Link to="/login/admin" className="lp-nav-btn-outline">Admin</Link>
             <Link to="/login/user" className="lp-nav-btn-outline">Log In</Link>
             <Link to="/signup" className="lp-nav-signup">Sign Up</Link>
             <button
@@ -242,6 +241,9 @@ export default function LoginPage() {
       <footer className="lp-footer">
         <div className="lp-footer-brand">ExamForge</div>
         <div className="lp-footer-tagline">AI-Powered Question Paper Generator</div>
+        <div style={{ marginTop: '0.75rem', fontSize: '0.78rem' }}>
+          <Link to="/login/admin" style={{ color: 'var(--gray-500)', textDecoration: 'none' }}>Administrator Portal</Link>
+        </div>
       </footer>
     </div>
   );

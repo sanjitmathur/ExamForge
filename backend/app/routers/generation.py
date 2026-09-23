@@ -10,11 +10,32 @@ from ..models import User, GeneratedPaper, Conversation, UserLearning
 from ..schemas import (
     GeneratePaperRequest, GeneratedPaperResponse, GeneratedPaperListResponse,
     PaperStatusResponse, ChatMessageRequest, ConversationResponse, UserLearningResponse,
+    UpdatePaperContentRequest, QuotaResponse,
 )
 from ..utils.deps import get_current_user
 from ..services.paper_generator import generate_paper_background, refine_paper_with_chat
 
 router = APIRouter(prefix="/api/generate", tags=["generation"])
+
+
+@router.get("/quota", response_model=QuotaResponse)
+async def get_generation_quota(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    count_result = await db.execute(
+        select(func.count(GeneratedPaper.id)).where(
+            GeneratedPaper.user_id == current_user.id,
+            GeneratedPaper.created_at >= today_start,
+        )
+    )
+    today_count = count_result.scalar() or 0
+    return QuotaResponse(
+        used=today_count,
+        limit=settings.RATE_LIMIT_PAPERS_PER_DAY,
+        remaining=max(0, settings.RATE_LIMIT_PAPERS_PER_DAY - today_count),
+    )
 
 
 @router.post("", response_model=GeneratedPaperResponse)
@@ -110,6 +131,35 @@ async def get_paper_status(
     if not paper:
         raise HTTPException(404, "Paper not found")
     return {"id": paper.id, "status": paper.status, "error_message": paper.error_message}
+
+
+@router.put("/{paper_id:int}", response_model=GeneratedPaperResponse)
+async def update_paper_content(
+    paper_id: int,
+    data: UpdatePaperContentRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(GeneratedPaper).where(
+            GeneratedPaper.id == paper_id,
+            GeneratedPaper.user_id == current_user.id,
+        )
+    )
+    paper = result.scalar_one_or_none()
+    if not paper:
+        raise HTTPException(404, "Paper not found")
+
+    if data.title is not None:
+        paper.title = data.title
+    if data.content_markdown is not None:
+        paper.content_markdown = data.content_markdown
+    if data.answer_key_markdown is not None:
+        paper.answer_key_markdown = data.answer_key_markdown
+
+    await db.commit()
+    await db.refresh(paper)
+    return GeneratedPaperResponse.model_validate(paper)
 
 
 @router.post("/{paper_id:int}/chat")

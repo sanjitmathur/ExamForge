@@ -149,3 +149,9 @@ export interface GeneratePaperRequest {
   duration_minutes?: number;
   additional_instructions?: string;
 }
+
+export interface GenerationQuota {
+  used: number;
+  limit: number;
+  remaining: number;
+}

@@ -97,8 +97,11 @@ export default function UserAuthPage() {
             <div className="auth-switch">
               Don't have an account? <Link to="/signup">Sign Up</Link>
             </div>
+            <div style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--gray-500)', marginTop: '0.85rem' }}>
+              Forgot password? Contact your school administrator to reset credentials.
+            </div>
             <div className="auth-alt-link">
-              <Link to="/login/admin">Login as Admin &rarr;</Link>
+              School administrator? <Link to="/login/admin">Admin Portal &rarr;</Link>
             </div>
           </div>
         </div>

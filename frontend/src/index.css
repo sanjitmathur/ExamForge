@@ -106,7 +106,9 @@ body {
 }
 
 a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
-a:hover { color: var(--primary-hover); }
+a:hover:not(.btn):not(.lp-btn-primary):not(.lp-btn-secondary):not(.lp-nav-signup):not(.lp-nav-btn-outline):not(.dash-action-btn):not(.workflow-step):not(.dash-empty-link) {
+  color: var(--primary-hover);
+}
 
 ::selection { background: rgba(99, 102, 241, 0.15); color: var(--primary-hover); }
 

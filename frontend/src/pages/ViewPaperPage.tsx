@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, type FormEvent, type KeyboardEvent } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-import { Square } from 'lucide-react';
+import { Square, Printer, Edit3, Save, X } from 'lucide-react';
 import { generateAPI, chatAPI, exportAPI } from '../services/api';
 import type { GeneratedPaper, ConversationMessage } from '../types';
 
@@ -22,6 +22,9 @@ export default function ViewPaperPage() {
   const [sending, setSending] = useState(false);
   const [view, setView] = useState<'paper' | 'answer_key'>('paper');
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedContent, setEditedContent] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -163,6 +166,33 @@ export default function ViewPaperPage() {
     } catch { alert('Export failed'); }
   };
 
+  const handleStartEdit = () => {
+    setEditedContent(content || '');
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditedContent('');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!paper) return;
+    setSavingEdit(true);
+    try {
+      const payload = view === 'paper'
+        ? { content_markdown: editedContent }
+        : { answer_key_markdown: editedContent };
+      const res = await generateAPI.update(paperId, payload);
+      setPaper(res.data);
+      setIsEditing(false);
+    } catch {
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   if (loading) return <div className="page"><div className="empty-state"><span className="spinner" /></div></div>;
   if (!paper) return <div className="page"><div className="empty-state"><p>Paper not found</p></div></div>;
 
@@ -192,7 +222,13 @@ export default function ViewPaperPage() {
   const showChips = !sending && messages.length === 0;
 
   return (
-    <div className="page" style={{ maxWidth: '100%', padding: '1rem 1.5rem' }}>
+    <div className="page view-paper-page" style={{ maxWidth: '100%', padding: '1rem 1.5rem' }}>
+      <div style={{ marginBottom: '0.5rem' }}>
+        <Link to="/generate" className="back-link" style={{ display: 'inline-flex', alignItems: 'center', fontSize: '0.85rem' }}>
+          &larr; Back to Generated Papers
+        </Link>
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h1 style={{ fontSize: '1.25rem' }}>{paper.title}</h1>
       </div>
@@ -217,6 +253,14 @@ export default function ViewPaperPage() {
             Word
           </button>
         </div>
+        <div className="export-group-divider" />
+        <button
+          className="btn btn-outline btn-sm"
+          onClick={() => window.print()}
+          title="Print classroom-ready paper layout"
+        >
+          <Printer size={13} style={{ marginRight: '4px' }} /> Print
+        </button>
         <div className="export-group-spacer" />
         <button className="btn btn-ghost btn-sm" onClick={handleDelete} style={{ color: 'var(--danger)' }}>
           Delete
@@ -225,12 +269,38 @@ export default function ViewPaperPage() {
 
       <div className="paper-view">
         <div className="paper-preview">
-          <div className="toggle-group">
-            <button className={view === 'paper' ? 'active' : ''} onClick={() => setView('paper')}>Paper</button>
-            <button className={view === 'answer_key' ? 'active' : ''} onClick={() => setView('answer_key')}>Answer Key</button>
+          <div className="toggle-group" style={{ display: 'flex', alignItems: 'center' }}>
+            <button className={view === 'paper' ? 'active' : ''} onClick={() => { setView('paper'); setIsEditing(false); }}>Paper</button>
+            <button className={view === 'answer_key' ? 'active' : ''} onClick={() => { setView('answer_key'); setIsEditing(false); }}>Answer Key</button>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+              {isEditing ? (
+                <>
+                  <button className="btn btn-primary btn-sm" onClick={handleSaveEdit} disabled={savingEdit}>
+                    {savingEdit ? <span className="spinner" /> : <Save size={13} style={{ marginRight: '4px' }} />} Save Changes
+                  </button>
+                  <button className="btn btn-ghost btn-sm" onClick={handleCancelEdit}>
+                    <X size={13} style={{ marginRight: '3px' }} /> Cancel
+                  </button>
+                </>
+              ) : (
+                <button className="btn btn-outline btn-sm" onClick={handleStartEdit} title="Directly edit text">
+                  <Edit3 size={13} style={{ marginRight: '4px' }} /> Edit Directly
+                </button>
+              )}
+            </div>
           </div>
           <div className="paper-content">
-            <ReactMarkdown>{content || ''}</ReactMarkdown>
+            {isEditing ? (
+              <textarea
+                className="paper-direct-editor"
+                value={editedContent}
+                onChange={e => setEditedContent(e.target.value)}
+                placeholder="Edit paper markdown content directly..."
+              />
+            ) : (
+              <ReactMarkdown>{content || ''}</ReactMarkdown>
+            )}
           </div>
         </div>
 

@@ -10,6 +10,7 @@ import type {
   GeneratePaperRequest,
   AdminStats,
   UserDetail,
+  GenerationQuota,
 } from '../types';
 
 const api = axios.create({
@@ -105,6 +106,9 @@ export const generateAPI = {
   get: (id: number) => api.get<GeneratedPaper>(`/generate/${id}`),
   status: (id: number) =>
     api.get<{ id: number; status: string; error_message: string | null }>(`/generate/${id}/status`),
+  quota: () => api.get<GenerationQuota>('/generate/quota'),
+  update: (id: number, data: { title?: string; content_markdown?: string; answer_key_markdown?: string }) =>
+    api.put<GeneratedPaper>(`/generate/${id}`, data),
   delete: (id: number) => api.delete(`/generate/${id}`),
 };
 

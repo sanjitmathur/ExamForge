@@ -1,9 +1,9 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Plus, X, Sparkles } from 'lucide-react';
 import { generateAPI, questionsAPI } from '../services/api';
 import { BOARDS, GRADES, SUBJECTS, DIFFICULTIES } from '../constants';
-import type { GeneratedPaperListItem } from '../types';
+import type { GeneratedPaperListItem, GenerationQuota } from '../types';
 
 export default function GeneratePage() {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ export default function GeneratePage() {
   const [grade, setGrade] = useState('');
   const [subject, setSubject] = useState('');
   const [topics, setTopics] = useState<string[]>([]);
+  const [customTopicInput, setCustomTopicInput] = useState('');
   const [availableTopics, setAvailableTopics] = useState<string[]>([]);
   const [difficultyMix, setDifficultyMix] = useState<Record<string, number>>({ easy: 3, medium: 4, hard: 3 });
   const [totalMarks, setTotalMarks] = useState(100);
@@ -20,15 +21,25 @@ export default function GeneratePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [papers, setPapers] = useState<GeneratedPaperListItem[]>([]);
+  const [quota, setQuota] = useState<GenerationQuota | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     generateAPI.list().then(r => setPapers(r.data)).catch(() => {});
+    generateAPI.quota().then(r => setQuota(r.data)).catch(() => {});
     questionsAPI.topics().then(r => setAvailableTopics(r.data)).catch(() => {});
   }, []);
 
   const toggleTopic = (t: string) => {
     setTopics(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+  };
+
+  const handleAddCustomTopic = () => {
+    const trimmed = customTopicInput.trim();
+    if (trimmed && !topics.includes(trimmed)) {
+      setTopics(prev => [...prev, trimmed]);
+      setCustomTopicInput('');
+    }
   };
 
   const handleDeletePaper = async (id: number) => {
@@ -66,9 +77,28 @@ export default function GeneratePage() {
 
   return (
     <div className="page">
-      <div className="page-header">
-        <h1>Generate Paper</h1>
-        <p>Create a new AI-generated exam paper from your question bank</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div>
+          <h1>Generate Paper</h1>
+          <p>Create a new AI-generated exam paper from your question bank or curriculum standards</p>
+        </div>
+        {quota && (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: 'var(--radius)',
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            background: quota.remaining > 0 ? 'var(--primary-light)' : 'rgba(239, 68, 68, 0.1)',
+            color: quota.remaining > 0 ? 'var(--primary)' : 'var(--danger)',
+            border: `1px solid ${quota.remaining > 0 ? 'var(--border)' : 'rgba(239, 68, 68, 0.2)'}`,
+          }}>
+            <Sparkles size={14} />
+            <span>Daily Quota: {quota.remaining} of {quota.limit} left</span>
+          </div>
+        )}
       </div>
 
       <div>
@@ -140,22 +170,80 @@ export default function GeneratePage() {
                     </div>
                   ))}
                 </div>
-                <div className="form-hint">Number of questions per difficulty level. Total: {totalQuestions} questions</div>
+                <div className="form-hint" style={{ marginTop: '0.4rem', color: 'var(--gray-600)', fontSize: '0.82rem' }}>
+                  <strong>{totalQuestions} questions</strong> across <strong>{totalMarks} marks</strong>
+                  {totalQuestions > 0 ? ` (average ~${(totalMarks / totalQuestions).toFixed(1)} marks per question)` : ''}.
+                </div>
               </div>
 
-              {availableTopics.length > 0 && (
-                <div className="form-group">
-                  <label>Topics (optional)</label>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    {availableTopics.map(t => (
-                      <button key={t} type="button"
-                        className={`btn btn-sm ${topics.includes(t) ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => toggleTopic(t)}
-                      >{t}</button>
+              <div className="form-group">
+                <label>Topics & Curriculum Units (optional)</label>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <input
+                    type="text"
+                    placeholder="Type custom topic (e.g. Thermodynamics, Algebra) and press Add..."
+                    value={customTopicInput}
+                    onChange={e => setCustomTopicInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomTopic(); } }}
+                  />
+                  <button type="button" className="btn btn-outline btn-sm" onClick={handleAddCustomTopic}>
+                    <Plus size={14} style={{ marginRight: '2px' }} /> Add
+                  </button>
+                </div>
+
+                {/* Selected topics */}
+                {topics.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--gray-500)', alignSelf: 'center' }}>Selected:</span>
+                    {topics.map(t => (
+                      <span
+                        key={t}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          background: 'var(--primary-light)',
+                          color: 'var(--primary)',
+                          border: '1px solid var(--border)',
+                          padding: '3px 8px',
+                          borderRadius: 'var(--radius)',
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {t}
+                        <button
+                          type="button"
+                          onClick={() => toggleTopic(t)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', display: 'flex' }}
+                          title="Remove topic"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+
+                {availableTopics.length > 0 && (
+                  <div style={{ marginTop: '0.25rem' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginBottom: '0.35rem' }}>Suggestions from your uploaded papers:</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      {availableTopics.filter(t => !topics.includes(t)).map(t => (
+                        <button
+                          key={t}
+                          type="button"
+                          className="btn btn-sm btn-outline"
+                          style={{ fontSize: '0.78rem', padding: '2px 8px' }}
+                          onClick={() => toggleTopic(t)}
+                        >
+                          + {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div className="form-group">
                 <label>Additional Instructions</label>

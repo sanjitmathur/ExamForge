@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { papersAPI } from '../services/api';
 import { BOARDS, GRADES, SUBJECTS } from '../constants';
 import type { UploadedPaper } from '../types';
+import { X, AlertCircle } from 'lucide-react';
 
 const STATUS_CONFIG: Record<string, { label: string; dots: number; active?: boolean; error?: boolean }> = {
   pending:    { label: 'Queued', dots: 0, active: true },
@@ -38,8 +39,9 @@ export default function UploadPage() {
   const [board, setBoard] = useState('');
   const [grade, setGrade] = useState('');
   const [subject, setSubject] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [error, setError] = useState('');
   const [papers, setPapers] = useState<UploadedPaper[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -76,7 +78,7 @@ export default function UploadPage() {
           loadPapers();
         } else {
           setPapers(prev => prev.map(p =>
-            p.id === id ? { ...p, status: res.data.status } : p
+            p.id === id ? { ...p, status: res.data.status, error_message: res.data.error_message } : p
           ));
         }
       } catch {
@@ -86,25 +88,57 @@ export default function UploadPage() {
     }, 2000);
   };
 
+  const addFiles = (newFiles: FileList | File[]) => {
+    const valid = Array.from(newFiles).filter(f => {
+      const ext = f.name.toLowerCase();
+      return ext.endsWith('.pdf') || ext.endsWith('.docx') || ext.endsWith('.jpg') || ext.endsWith('.jpeg') || ext.endsWith('.png');
+    });
+    setFiles(prev => [...prev, ...valid]);
+  };
+
+  const removeFile = (idx: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== idx));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!file || !board || !grade || !subject) {
-      setError('Please fill all fields and select a file');
+    if (files.length === 0) {
+      setError('Please select or drop at least one exam paper file (PDF, DOCX, or image) to upload.');
+      fileRef.current?.click();
+      return;
+    }
+    if (!board || !grade || !subject) {
+      setError('Please select Board, Grade, and Subject before uploading.');
       return;
     }
     setError('');
     setUploading(true);
-    try {
-      const res = await papersAPI.upload(file, board, grade, subject);
-      setPapers(prev => [res.data, ...prev]);
-      startPolling(res.data.id);
-      setFile(null);
-      if (fileRef.current) fileRef.current.value = '';
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Upload failed');
-    } finally {
-      setUploading(false);
+    setUploadProgress({ current: 0, total: files.length });
+
+    const newlyAdded: UploadedPaper[] = [];
+    const errors: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      setUploadProgress({ current: i + 1, total: files.length });
+      try {
+        const res = await papersAPI.upload(files[i], board, grade, subject);
+        newlyAdded.push(res.data);
+        startPolling(res.data.id);
+      } catch (err: any) {
+        errors.push(`${files[i].name}: ${err.response?.data?.detail || 'Upload failed'}`);
+      }
     }
+
+    if (newlyAdded.length > 0) {
+      setPapers(prev => [...newlyAdded, ...prev]);
+    }
+    if (errors.length > 0) {
+      setError(errors.join(' | '));
+    }
+    setFiles([]);
+    if (fileRef.current) fileRef.current.value = '';
+    setUploading(false);
+    setUploadProgress(null);
   };
 
   const handleRetry = async (id: number) => {
@@ -130,8 +164,9 @@ export default function UploadPage() {
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    const f = e.dataTransfer.files[0];
-    if (f) setFile(f);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      addFiles(e.dataTransfer.files);
+    }
   };
 
   const hasCompletedPapers = papers.some(p => p.status === 'completed' && p.question_count > 0);
@@ -139,8 +174,8 @@ export default function UploadPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Upload Paper</h1>
-        <p>Upload previous year papers for AI analysis and question extraction</p>
+        <h1>Upload Papers</h1>
+        <p>Upload past exam papers (single or batch) for AI question extraction</p>
       </div>
 
       <div className="card" style={{ marginBottom: '1.5rem' }}>
@@ -180,30 +215,83 @@ export default function UploadPage() {
             <input
               ref={fileRef}
               type="file"
+              multiple
               accept=".pdf,.docx,.jpg,.jpeg,.png"
               style={{ display: 'none' }}
-              onChange={e => setFile(e.target.files?.[0] || null)}
+              onChange={e => {
+                if (e.target.files) addFiles(e.target.files);
+              }}
             />
-            {file ? (
+            {files.length > 0 ? (
               <div>
                 <p style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>&#128196;</p>
-                <p style={{ color: 'var(--gray-800)', fontWeight: 600, fontSize: '0.9rem' }}>{file.name}</p>
-                <p style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Click to change file</p>
+                <p style={{ color: 'var(--gray-800)', fontWeight: 600, fontSize: '0.95rem' }}>
+                  {files.length} {files.length === 1 ? 'file' : 'files'} selected for batch upload
+                </p>
+                <p style={{ fontSize: '0.75rem', marginTop: '0.25rem', color: 'var(--primary)' }}>
+                  + Click or drop more files to add to batch
+                </p>
               </div>
             ) : (
               <>
                 <p style={{ fontSize: '2rem', marginBottom: '0.25rem' }}>&#8682;</p>
                 <p style={{ fontSize: '0.95rem', color: 'var(--gray-700)', fontWeight: 600 }}>
-                  Drop a file here or click to browse
+                  Drop files here or click to browse
                 </p>
-                <p>PDF, DOCX, JPG, PNG (max 20MB)</p>
+                <p>Select single or multiple PDFs, DOCX, JPG, PNG (max 20MB per file)</p>
               </>
             )}
           </div>
 
+          {/* Staged files preview list */}
+          {files.length > 0 && (
+            <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--gray-600)' }}>
+                Staged for upload ({files.length}):
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {files.map((f, idx) => (
+                  <span
+                    key={`${f.name}-${idx}`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'var(--gray-100)',
+                      padding: '4px 10px',
+                      borderRadius: 'var(--radius)',
+                      fontSize: '0.8rem',
+                      color: 'var(--gray-800)',
+                    }}
+                  >
+                    <span>{f.name}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--gray-400)' }}>
+                      ({(f.size / (1024 * 1024)).toFixed(1)}MB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', display: 'flex' }}
+                      title="Remove from batch"
+                    >
+                      <X size={13} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div style={{ marginTop: '1.25rem' }}>
             <button type="submit" className="btn btn-primary" disabled={uploading}>
-              {uploading ? <><span className="spinner" /> Uploading...</> : 'Upload & Analyze'}
+              {uploading ? (
+                <>
+                  <span className="spinner" />{' '}
+                  {uploadProgress ? `Uploading ${uploadProgress.current} of ${uploadProgress.total}...` : 'Uploading...'}
+                </>
+              ) : (
+                files.length > 1 ? `Upload & Analyze (${files.length} Papers)` : 'Upload & Analyze'
+              )}
             </button>
           </div>
         </form>
@@ -232,7 +320,15 @@ export default function UploadPage() {
                 <tbody>
                   {papers.map(p => (
                     <tr key={p.id}>
-                      <td style={{ fontWeight: 500 }}>{p.original_filename}</td>
+                      <td style={{ fontWeight: 500 }}>
+                        <div>{p.original_filename}</div>
+                        {p.status === 'failed' && (
+                          <div style={{ fontSize: '0.74rem', color: 'var(--danger)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <AlertCircle size={12} />
+                            <span>{p.error_message || 'Processing failed. Please check document quality and retry.'}</span>
+                          </div>
+                        )}
+                      </td>
                       <td>{p.subject || '-'}</td>
                       <td><StatusDots status={p.status} /></td>
                       <td style={{ fontWeight: 600 }}>{p.question_count}</td>

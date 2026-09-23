@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { SlidersHorizontal, Upload } from 'lucide-react';
+import { SlidersHorizontal, Upload, Search, X } from 'lucide-react';
 import { questionsAPI } from '../services/api';
 import { BOARDS, GRADES, SUBJECTS, QUESTION_TYPES, DIFFICULTIES } from '../constants';
 import type { ExtractedQuestion } from '../types';
@@ -9,6 +9,7 @@ export default function QuestionsPage() {
   const [questions, setQuestions] = useState<ExtractedQuestion[]>([]);
   const [topics, setTopics] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showMoreFilters, setShowMoreFilters] = useState(false);
 
@@ -19,15 +20,21 @@ export default function QuestionsPage() {
   useEffect(() => {
     setLoading(true);
     const params: Record<string, string> = {};
+    if (searchQuery.trim()) params.search = searchQuery.trim();
     Object.entries(filters).forEach(([k, v]) => { if (v) params[k] = v; });
     questionsAPI.list(params)
       .then(r => setQuestions(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [filters]);
+  }, [filters, searchQuery]);
 
   const setFilter = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleClearAll = () => {
+    setSearchQuery('');
+    setFilters({});
   };
 
   const typeLabel = (t: string) => QUESTION_TYPES.find(qt => qt.value === t)?.label || t;
@@ -35,13 +42,38 @@ export default function QuestionsPage() {
   // Count active hidden filters (board, type, topic)
   const hiddenFilterCount = [filters.board, filters.question_type, filters.topic].filter(Boolean).length;
 
-  const hasAnyData = !loading && questions.length === 0 && Object.values(filters).every(v => !v);
+  const hasAnyData = !loading && questions.length === 0 && !searchQuery.trim() && Object.values(filters).every(v => !v);
 
   return (
     <div className="page">
       <div className="page-header">
         <h1>Question Bank</h1>
-        <p>{questions.length} questions in your bank</p>
+        <p>
+          {questions.length} {questions.length === 1 ? 'question' : 'questions'}
+          {searchQuery.trim() ? ` matching "${searchQuery.trim()}"` : ' in your bank'}
+        </p>
+      </div>
+
+      {/* Search bar */}
+      <div className="search-bar-wrap">
+        <Search size={18} className="search-bar-icon" />
+        <input
+          type="text"
+          className="search-bar-input"
+          placeholder="Search questions by keyword, equation, concept, or topic..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            className="search-bar-clear"
+            onClick={() => setSearchQuery('')}
+            title="Clear search"
+          >
+            <X size={15} />
+          </button>
+        )}
       </div>
 
       {/* Primary filters */}
@@ -119,10 +151,18 @@ export default function QuestionsPage() {
         </div>
       ) : questions.length === 0 ? (
         <div className="empty-state">
-          <p>No questions match your filters</p>
+          <p>No questions match your {searchQuery.trim() ? 'search or ' : ''}filters</p>
           <p style={{ fontSize: '0.82rem', color: 'var(--gray-400)', marginTop: '0.5rem' }}>
-            Try adjusting or clearing some filters to see more results.
+            Try adjusting or clearing your search to see more results.
           </p>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={handleClearAll}
+            style={{ marginTop: '0.75rem' }}
+          >
+            Clear Search & Filters
+          </button>
         </div>
       ) : (
         questions.map(q => (

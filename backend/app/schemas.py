@@ -175,3 +175,15 @@ class ConversationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class UpdatePaperContentRequest(BaseModel):
+    title: Optional[str] = None
+    content_markdown: Optional[str] = None
+    answer_key_markdown: Optional[str] = None
+
+
+class QuotaResponse(BaseModel):
+    used: int
+    limit: int
+    remaining: int

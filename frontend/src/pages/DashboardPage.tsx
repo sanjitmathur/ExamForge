@@ -33,9 +33,9 @@ export default function DashboardPage() {
   const questionCount = stats?.total_questions ?? 0;
 
   const workflowSteps = [
-    { label: 'Upload Papers', to: '/upload', count: papers.length, done: papers.length > 0 },
-    { label: 'Question Bank', to: '/questions', count: questionCount, done: questionCount > 0 },
-    { label: 'Generate Paper', to: '/generate', count: generated.length, done: generated.length > 0 },
+    { label: 'Upload Papers', sub: 'Build question bank (optional)', to: '/upload', count: papers.length, done: papers.length > 0 },
+    { label: 'Question Bank', sub: 'Search & review questions', to: '/questions', count: questionCount, done: questionCount > 0 },
+    { label: 'Generate Paper', sub: 'Build exam with AI', to: '/generate', count: generated.length, done: generated.length > 0 },
   ];
 
   return (
@@ -51,9 +51,21 @@ export default function DashboardPage() {
           <div className="onboarding-banner-icon">
             <Sparkles size={18} strokeWidth={2} />
           </div>
-          <div className="onboarding-banner-text">
-            <strong>Welcome to ExamForge!</strong> Start by uploading a previous exam paper.
-            We'll extract questions into your bank, then you can generate new papers with AI.
+          <div className="onboarding-banner-content" style={{ flex: 1 }}>
+            <div className="onboarding-banner-text">
+              <strong>Welcome to ExamForge!</strong> Choose how you'd like to begin:
+            </div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--gray-600)', marginTop: '0.25rem' }}>
+              Upload past papers to automatically build an intelligent question bank, or generate a fresh, curriculum-aligned exam paper immediately using AI.
+            </p>
+          </div>
+          <div className="onboarding-banner-actions" style={{ display: 'flex', gap: '0.5rem', alignSelf: 'center' }}>
+            <Link to="/upload" className="btn btn-outline btn-sm">
+              <Upload size={14} strokeWidth={2} /> Upload Papers
+            </Link>
+            <Link to="/generate" className="btn btn-primary btn-sm">
+              <Sparkles size={14} strokeWidth={2} /> Quick Generate with AI &rarr;
+            </Link>
           </div>
         </div>
       )}
@@ -68,6 +80,7 @@ export default function DashboardPage() {
               </div>
               <div className="workflow-step-info">
                 <span className="workflow-step-label">{step.label}</span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--gray-400)', display: 'block' }}>{step.sub}</span>
                 {step.count > 0 && (
                   <span className="workflow-step-count">{step.count} {step.count === 1 ? 'item' : 'items'}</span>
                 )}

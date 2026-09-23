@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, distinct
+from sqlalchemy import select, func, distinct, or_
 from typing import Optional
 from ..database import get_db
 from ..models import User, ExtractedQuestion
@@ -12,6 +12,7 @@ router = APIRouter(prefix="/api/questions", tags=["questions"])
 
 @router.get("", response_model=list[ExtractedQuestionResponse])
 async def list_questions(
+    search: Optional[str] = Query(None),
     board: Optional[str] = Query(None),
     grade_level: Optional[str] = Query(None),
     subject: Optional[str] = Query(None),
@@ -23,6 +24,15 @@ async def list_questions(
     current_user: User = Depends(get_current_user),
 ):
     q = select(ExtractedQuestion).where(ExtractedQuestion.user_id == current_user.id)
+    if search and search.strip():
+        term = f"%{search.strip()}%"
+        q = q.where(
+            or_(
+                ExtractedQuestion.question_text.ilike(term),
+                ExtractedQuestion.answer_text.ilike(term),
+                ExtractedQuestion.topic.ilike(term),
+            )
+        )
     if board:
         q = q.where(ExtractedQuestion.board == board)
     if grade_level:
