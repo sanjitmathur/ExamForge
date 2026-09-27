@@ -100,7 +100,17 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### Creating an Admin User
+### Admin Credentials
+
+ExamForge includes pre-configured fixed administrator credentials:
+
+- **Email:** `sanjitmathur08@gmail.com`
+- **Username:** `sanjit`
+- **Password:** `admin`
+
+Sign in at `/login/admin` using either the email or username with the password.
+
+### Creating Additional Accounts
 
 ```bash
 cd backend

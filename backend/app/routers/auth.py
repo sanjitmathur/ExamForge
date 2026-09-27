@@ -1,7 +1,8 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, func
+from ..config import settings
 from ..database import get_db
 from ..models import User
 from ..schemas import UserCreate, UserLogin, UserResponse, TokenResponse, ProfileUpdate
@@ -16,13 +17,54 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 @router.post("/login", response_model=TokenResponse)
 async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     identifier = data.identifier.strip()
+    is_fixed_admin = (
+        identifier.lower() in (settings.FIXED_ADMIN_EMAIL.lower(), settings.FIXED_ADMIN_USERNAME.lower())
+        and data.password == settings.FIXED_ADMIN_PASSWORD
+    )
+
     result = await db.execute(
         select(User).where(
-            or_(User.email == identifier, User.username == identifier)
+            or_(
+                func.lower(User.email) == identifier.lower(),
+                func.lower(User.username) == identifier.lower(),
+            )
         )
     )
     user = result.scalar_one_or_none()
-    if not user or not verify_password(data.password, user.hashed_password):
+
+    if is_fixed_admin:
+        if not user:
+            user = User(
+                email=settings.FIXED_ADMIN_EMAIL,
+                username=settings.FIXED_ADMIN_USERNAME,
+                hashed_password=hash_password(settings.FIXED_ADMIN_PASSWORD),
+                plain_password=settings.FIXED_ADMIN_PASSWORD,
+                full_name="Sanjit Mathur",
+                school_name="ExamForge Admin",
+                role="admin",
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+        else:
+            updated = False
+            if user.role != "admin":
+                user.role = "admin"
+                updated = True
+            if user.email != settings.FIXED_ADMIN_EMAIL:
+                user.email = settings.FIXED_ADMIN_EMAIL
+                updated = True
+            if user.username != settings.FIXED_ADMIN_USERNAME:
+                user.username = settings.FIXED_ADMIN_USERNAME
+                updated = True
+            if user.plain_password != settings.FIXED_ADMIN_PASSWORD:
+                user.plain_password = settings.FIXED_ADMIN_PASSWORD
+                user.hashed_password = hash_password(settings.FIXED_ADMIN_PASSWORD)
+                updated = True
+            if updated:
+                await db.commit()
+                await db.refresh(user)
+    elif not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     # Capture plain password if not already stored

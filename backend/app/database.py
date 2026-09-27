@@ -73,3 +73,51 @@ async def init_db():
                 )
             except Exception:
                 pass  # Column already exists
+
+    # Seed or synchronize default fixed admin user
+    from .models import User
+    from .utils.auth import hash_password
+    from sqlalchemy import select, or_, func
+
+    async with AsyncSessionLocal() as session:
+        admin_user = (
+            await session.execute(
+                select(User).where(
+                    or_(
+                        func.lower(User.email) == settings.FIXED_ADMIN_EMAIL.lower(),
+                        func.lower(User.username) == settings.FIXED_ADMIN_USERNAME.lower(),
+                    )
+                )
+            )
+        ).scalar_one_or_none()
+
+        if not admin_user:
+            admin_user = User(
+                email=settings.FIXED_ADMIN_EMAIL,
+                username=settings.FIXED_ADMIN_USERNAME,
+                hashed_password=hash_password(settings.FIXED_ADMIN_PASSWORD),
+                plain_password=settings.FIXED_ADMIN_PASSWORD,
+                full_name="Sanjit Mathur",
+                school_name="ExamForge Admin",
+                role="admin",
+            )
+            session.add(admin_user)
+            await session.commit()
+        else:
+            updated = False
+            if admin_user.role != "admin":
+                admin_user.role = "admin"
+                updated = True
+            if admin_user.email != settings.FIXED_ADMIN_EMAIL:
+                admin_user.email = settings.FIXED_ADMIN_EMAIL
+                updated = True
+            if admin_user.username != settings.FIXED_ADMIN_USERNAME:
+                admin_user.username = settings.FIXED_ADMIN_USERNAME
+                updated = True
+            if admin_user.plain_password != settings.FIXED_ADMIN_PASSWORD:
+                admin_user.plain_password = settings.FIXED_ADMIN_PASSWORD
+                admin_user.hashed_password = hash_password(settings.FIXED_ADMIN_PASSWORD)
+                updated = True
+            if updated:
+                await session.commit()
+

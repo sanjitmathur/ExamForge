@@ -4,6 +4,7 @@ from sqlalchemy import select, func
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
+from ..config import settings
 from ..database import get_db
 from ..models import User, UploadedPaper, ExtractedQuestion, GeneratedPaper
 from ..schemas import UserResponse
@@ -242,6 +243,10 @@ async def update_user(
         user.full_name = data.full_name
     if data.school_name is not None:
         user.school_name = data.school_name
+    is_fixed_admin = user.email == settings.FIXED_ADMIN_EMAIL or user.username == settings.FIXED_ADMIN_USERNAME
+    if is_fixed_admin and data.role is not None and data.role != "admin":
+        raise HTTPException(status_code=400, detail="Cannot demote the default fixed admin account")
+
     if data.role is not None:
         if data.role not in ("user", "admin"):
             raise HTTPException(status_code=400, detail="Role must be 'user' or 'admin'")
@@ -274,6 +279,8 @@ async def delete_user(
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    if user.email == settings.FIXED_ADMIN_EMAIL or user.username == settings.FIXED_ADMIN_USERNAME:
+        raise HTTPException(status_code=400, detail="Cannot delete the default fixed admin account")
     await db.delete(user)
     await db.commit()
     return {"detail": "User deleted successfully"}

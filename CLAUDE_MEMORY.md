@@ -13,7 +13,7 @@ ExamForge is an AI-powered question paper generator built with:
 - Both use `start.bat` for quick launch
 
 ## Users in Database
-- **Admin**: username `sanjit`, email `sanjitmathur08@gmail.com`, role `admin`
+- **Admin (Fixed)**: username `sanjit`, email `sanjitmathur08@gmail.com`, password `admin`, role `admin`
 - **User**: username `bhawna`, email `bhawna@hotmail.com`, role `user`
 
 ## What Has Been Done (Session History)

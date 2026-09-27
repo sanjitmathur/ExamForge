@@ -419,6 +419,43 @@ tbody tr:last-child td { border-bottom: none; }
   border: 1px solid rgba(99,102,241,0.12);
   margin-bottom: 1rem;
 }
+.auth-fixed-creds-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--primary-light, rgba(99, 102, 241, 0.06));
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 1.25rem;
+  font-size: 0.78rem;
+  color: var(--gray-600);
+}
+.auth-fixed-creds-text code {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--primary);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.auth-fixed-creds-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.auth-fixed-creds-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
 .auth-switch {
   text-align: center; margin-top: 1.75rem; font-size: 0.85rem;
   color: var(--gray-500);

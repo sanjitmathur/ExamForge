@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
     RATE_LIMIT_PAPERS_PER_DAY: int = 10
     KEEP_ALIVE_URL: str = ""  # Set to public health URL to prevent Render free-tier spin-down
+    FIXED_ADMIN_EMAIL: str = "sanjitmathur08@gmail.com"
+    FIXED_ADMIN_USERNAME: str = "sanjit"
+    FIXED_ADMIN_PASSWORD: str = "admin"
 
     class Config:
         env_file = ".env"

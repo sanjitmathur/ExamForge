@@ -85,11 +85,33 @@ export default function AdminLoginPage() {
             <div className="auth-admin-badge">Admin Portal</div>
             <h1 className="auth-form-title">Admin Sign In</h1>
             <p className="auth-form-subtitle">Enter your admin credentials to continue</p>
+            <div className="auth-fixed-creds-hint">
+              <span className="auth-fixed-creds-text">
+                Fixed admin: <code>sanjit</code> / <code>admin</code>
+              </span>
+              <button
+                type="button"
+                className="auth-fixed-creds-btn"
+                onClick={() => {
+                  setIdentifier('sanjit');
+                  setPassword('admin');
+                  setError('');
+                }}
+              >
+                Auto-fill
+              </button>
+            </div>
             {error && <div className="login-error">{error}</div>}
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Email or Username</label>
-                <input type="text" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder="admin@example.com" required />
+                <input
+                  type="text"
+                  value={identifier}
+                  onChange={e => setIdentifier(e.target.value)}
+                  placeholder="sanjit or sanjitmathur08@gmail.com"
+                  required
+                />
               </div>
               <div className="form-group">
                 <label>Password</label>
